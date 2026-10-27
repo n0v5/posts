@@ -1,0 +1,102 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+}
+
+const rawSources = import.meta.glob('/src/content/blog/**/*.{md,mdx}', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+
+const { post } = Astro.props;
+const baseUrl = import.meta.env.BASE_URL;
+
+const relativePath = (post.filePath ?? '').replace(/\\/g, '/');
+// post.body 不含 frontmatter，所以通过 glob 读取磁盘上的原始文件
+const source =
+  (relativePath
+    ? Object.entries(rawSources).find(([path]) => path.replace(/\\/g, '/').endsWith(relativePath))?.[1]
+    : undefined) ??
+  post.body ??
+  '';
+
+const lineCount = source.split('\n').length;
+---
+
+<BaseLayout
+  title={`源码：${post.data.title}`}
+  description={`${post.data.title} 的 Markdown / MDX 源码`}
+>
+  <article class="space-y-6">
+    <header class="border-b border-zinc-200 dark:border-zinc-800 pb-6">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p class="mb-2 text-xs uppercase tracking-wider text-zinc-400">文章源码</p>
+          <h1 class="text-2xl font-extrabold tracking-tight">{post.data.title}</h1>
+        </div>
+        <a
+          href={`${baseUrl}${post.id}/`}
+          class="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-50 transition"
+        >
+          ← 返回文章
+        </a>
+      </div>
+      <p class="mt-3 break-all font-mono text-xs text-zinc-400">{post.filePath}</p>
+    </header>
+
+    <div class="flex items-center justify-between gap-4">
+      <p class="text-xs text-zinc-400">{lineCount} 行 · Markdown / MDX</p>
+      <button
+        type="button"
+        id="copy-source"
+        class="rounded-lg border border-zinc-200 dark:border-zinc-800 px-3 py-1.5 text-xs text-zinc-500 hover:border-zinc-300 hover:text-zinc-900 dark:hover:border-zinc-700 dark:hover:text-zinc-50 transition"
+      >
+        复制源码
+      </button>
+    </div>
+
+    <pre
+      id="article-source"
+      class="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 text-xs leading-relaxed"
+    ><code class="whitespace-pre font-mono text-zinc-800 dark:text-zinc-200">{source}</code></pre>
+  </article>
+
+  <script>
+    const button = document.getElementById('copy-source');
+    const sourceBlock = document.getElementById('article-source');
+
+    if (button && sourceBlock) {
+      button.addEventListener('click', async () => {
+        const text = sourceBlock.textContent ?? '';
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          textarea.remove();
+        }
+        button.textContent = '已复制';
+        window.setTimeout(() => {
+          button.textContent = '复制源码';
+        }, 1500);
+      });
+    }
+  </script>
+</BaseLayout>
