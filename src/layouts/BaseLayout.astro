@@ -1,0 +1,87 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = '记录数学、物理与技术笔记的个人知识库' } = Astro.props;
+const baseUrl = import.meta.env.BASE_URL;
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href={`${baseUrl}favicon.svg`} />
+    <link rel="icon" type="image/x-icon" href={`${baseUrl}favicon.ico`} />
+  </head>
+  <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50 min-h-screen flex flex-col antialiased">
+    <header class="border-b border-zinc-200 dark:border-zinc-800 backdrop-blur sticky top-0 z-40 bg-zinc-50/80 dark:bg-zinc-950/80">
+      <div class="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
+        <a href={baseUrl} class="font-bold text-lg hover:text-zinc-600 dark:hover:text-zinc-300 transition">
+          ~/posts
+        </a>
+        <nav class="flex gap-6 text-sm font-medium">
+          <a href={baseUrl} class="hover:underline">首页</a>
+          <a href={`${baseUrl}about/`} class="hover:underline">关于</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="flex-1 max-w-3xl w-full mx-auto px-6 py-10">
+      <slot />
+    </main>
+
+    <footer class="border-t border-zinc-100 dark:border-zinc-900 py-8 text-center text-xs text-zinc-400">
+      <p>&copy; {new Date().getFullYear()} Powered by <a href="https://astro.build/">Astro.</a></p>
+    </footer>
+
+    <script>
+      function setupMathCopy() {
+        document.querySelectorAll('.katex').forEach((katex) => {
+          if (katex.querySelector('.math-copy')) return;
+          const annotation = katex.querySelector('annotation[encoding="application/x-tex"]');
+          const tex = annotation?.textContent?.trim();
+          if (!tex) return;
+
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'math-copy';
+          button.textContent = '复制';
+          button.setAttribute('aria-label', '复制 LaTeX 源码');
+
+          button.addEventListener('click', async (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            try {
+              await navigator.clipboard.writeText(tex);
+            } catch {
+              const textarea = document.createElement('textarea');
+              textarea.value = tex;
+              textarea.style.position = 'fixed';
+              textarea.style.opacity = '0';
+              document.body.appendChild(textarea);
+              textarea.select();
+              document.execCommand('copy');
+              textarea.remove();
+            }
+            button.textContent = '已复制';
+            window.setTimeout(() => {
+              button.textContent = '复制';
+            }, 1500);
+          });
+
+          katex.appendChild(button);
+        });
+      }
+
+      setupMathCopy();
+      document.addEventListener('astro:page-load', setupMathCopy);
+    </script>
+  </body>
+</html>

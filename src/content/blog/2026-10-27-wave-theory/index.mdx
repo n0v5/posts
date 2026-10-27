@@ -1,0 +1,47 @@
+---
+title: "经典波动方程与交互式正弦波"
+pubDate: 2026-10-27
+description: "一维经典波动方程、正弦特解的推导，以及一个可调频率和振幅的交互式 SVG 演示。"
+tags: ["物理", "数学"]
+---
+
+import WaveSimulator from '../../../components/WaveSimulator.jsx';
+
+在一维空间中，无色散的经典波动方程写为：
+
+$$
+\frac{\partial^2 u}{\partial t^2} = v^2 \frac{\partial^2 u}{\partial x^2}
+$$
+
+其中 $u(x,t)$ 是波在位置 $x$ 和时间 $t$ 的位移，$v$ 是波的传播速度。
+
+## 正弦特解
+
+该方程最简谐的特解之一是正弦波：
+
+$$
+u(x,t) = A \sin(kx - \omega t)
+$$
+
+其中：
+
+- $A$ 是振幅；
+- $k = 2\pi / \lambda$ 是波数；
+- $\omega = 2\pi f$ 是角频率。
+
+## 交互演示
+
+拖动下面的滑块，观察频率与振幅如何改变波形：
+
+<WaveSimulator client:load />
+
+## 代码高亮
+
+```python
+import numpy as np
+
+x = np.linspace(0, 2 * np.pi, 400)
+y = np.sin(x)
+```
+
+> 公式在构建时由 KaTeX 渲染为静态 HTML；悬停公式右上角可复制对应的 LaTeX 源码。

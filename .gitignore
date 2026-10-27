@@ -22,3 +22,9 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# offline agent prompts
+startup.md
+persistence.md
+todo.md
+design_spec.md
