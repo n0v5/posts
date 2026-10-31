@@ -4,6 +4,12 @@
 ## 文章
 - [经典波动方程与交互式正弦波](https://n0v5.github.io/posts/2026-10-27-wave-theory/): 一维经典波动方程、正弦特解，以及可调频率与振幅的交互式正弦波演示。
 
+## 专题
+- [AI 时代的 HTML5 超级大全](https://n0v5.github.io/posts/html5/): 单文件、可离线的 HTML5 完整手册，覆盖语义、表单、媒体、图形、存储、网络、Worker、设备与 AI 前沿，含 37 个可交互演示。
+- [Dart 迁移指南：从 C++/Python 到 Dart](https://n0v5.github.io/posts/dart/): 面向 C++/Python 开发者的单文件 Dart 3 教程，覆盖类型系统、空安全、OOP、模式匹配、Future/Stream、Isolate、工具链与生态，含 6 个本地可视化演示。
+- [Rust 迁移指南：从 C++/Python 到 Rust](https://n0v5.github.io/posts/rust/): 面向 C++/Python 开发者的单文件 Rust 1.99 / Edition 2024 教程，覆盖所有权、借用、生命周期、trait/泛型、错误处理、并发、async、unsafe/FFI、Cargo 与生态，含 7 个本地可视化演示。
+- [从 Flutter 出发：UI/UX 与前端界面通用入门](https://n0v5.github.io/posts/uiux/): 先建立结构、样式、状态、语义的通用界面模型，再用 Flutter 3.47 / Material 3 实现；含需求简报、无障碍、迁移工作表与 12 个本地实验室。
+
 ## 数据出口
 - [feed.json](https://n0v5.github.io/posts/feed.json): 全站文章元数据与未渲染的 Markdown 原文，适合 RAG / 向量化。
 

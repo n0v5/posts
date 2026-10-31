@@ -1,0 +1,24 @@
+# Context
+
+- **HTML5 超级大全**：本项目中指一个独立、自包含、可离线保存的 HTML 专题页面，用来系统讲解现代 Web 平台能力并承载可运行演示；不是 Astro 内容集合中的普通文章。
+- **独立单页**：一个 `index.html` 内联全部 CSS/JS，不依赖站点布局、外部字体、图片、脚本或 CDN。
+- **旗舰演示**：针对重要能力域提供的可交互演示；需要服务端、硬件或特殊权限的 API 只提供代码、能力检测与降级说明，不强行做交互。
+- **内置 AI**：由浏览器自身提供的 AI 能力（Prompt、Summarizer、Translator、Language Detector、Writer、Rewriter 等）；本页面只做特性检测与本地调用，不接第三方模型服务。
+- **模拟流式**：用本地数据模拟 token 逐段输出的 UI，用于演示流式交互；必须在界面上明确标注“未调用模型”。
+- **Agent 可读性**：页面在语义结构、可访问名称、结构化数据与稳定 DOM 契约上对 LLM/自动化 Agent 友好，便于解析与操作。
+- **AI 视角**：每章中说明该 Web 能力与 AI 时代关系的短评，不替代该能力本身的技术讲解。
+- **支持标签**：用来标注能力成熟度与运行条件，取值为“稳定 / 实验 / 受限 / 需服务端”。
+- **学术文档 + AI 点缀**：本页面的视觉语言：以可读性优先的学术排版和 zinc 灰阶为主，仅在进度条、标题装饰、演示卡边线等局部使用蓝紫渐变强调。
+- **Dart 迁移指南**：本项目中指《Dart 迁移指南：从 C++/Python 到 Dart》，面向已掌握 C++/Python 的读者、以心智模型映射为主线的独立单文件专题页；不是 Flutter 教程，也不是 Dart 规范译本。
+- **迁移卡**：章节内嵌的“如果你来自 C++/Python”提示块，用读者已知概念解释目标语言（Dart/Rust）的差异；与附录映射表分工，不互相重复。
+- **映射表**：附录中的 C++/Python 与目标语言（Dart/Rust）的语法与 API 速查表，用于查漏补缺，不承担正文叙事。
+- **DartPad 外链**：代码块旁跳转到 dartpad.dev 的可选外部链接；页面不内嵌、不依赖它，离线仍完整可读。
+- **Rust Playground 外链**：代码块旁跳转到 play.rust-lang.org 的可选外部链接；页面不内嵌编译器；需要 Tokio、FFI、PyO3 等外部环境的代码块不提供。
+- **本地可视化演示**：不执行真实目标语言代码、仅用本地 JS 模拟概念（如 Dart 的事件循环/Isolate，Rust 的所有权/生命周期/Future 状态机，UI/UX 的布局/状态/无障碍实验室）的交互演示。
+- **Rust 迁移指南**：本项目中指《Rust 迁移指南：从 C++/Python 到 Rust》，以所有权/借用/生命周期为主轴、10 个主题部分 + 导言 + 附录的独立单文件专题页；不是 Rust 规范译本，也不是 Rustonomicon 替代品。
+- **安全契约**：Rust `unsafe` 代码或 FFI 边界必须满足的前置条件与不变量；页面中的 `unsafe` 示例必须写明，不能用它当“关闭检查”。
+- **UI/UX 指南**：本项目中指《从 Flutter 出发：UI/UX 与前端界面通用入门》，采用“Act I 通用界面模型 + Act II Flutter 参考实现”的两幕结构、60 个章节与 12 个本地实验室的独立单文件专题页；不是 Flutter API 大全，也不是设计规范译本。
+- **Running Example**：贯穿 UI/UX 指南的“设备任务面板”；Act I 用 HTML/CSS mock 讲通用概念，Act II 用 Flutter 实现同一个面板。
+- **四契约**：UI/UX 指南每章检查的 Structure / Style / State / Semantics 四项；分别对应结构、视觉、状态与可访问语义。
+- **迁移工作表**：UI/UX 指南附录 B 的通用问题表，列出 Structure / Style / State / Semantics / Tooling 与 Flutter 示例，目标框架列留空；正文不写 Qt 代码。
+- **Flutter 参考实现**：UI/UX 指南中的 Flutter 代码块，在本机 Flutter 3.47.7 / Dart 3.13.5 下通过 `flutter analyze` 与 `flutter test`，但不在页面中运行。

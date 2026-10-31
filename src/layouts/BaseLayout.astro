@@ -22,14 +22,22 @@ const baseUrl = import.meta.env.BASE_URL;
   </head>
   <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50 min-h-screen flex flex-col antialiased">
     <header class="border-b border-zinc-200 dark:border-zinc-800 backdrop-blur sticky top-0 z-40 bg-zinc-50/80 dark:bg-zinc-950/80">
-      <div class="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
-        <a href={baseUrl} class="font-bold text-lg hover:text-zinc-600 dark:hover:text-zinc-300 transition">
-          ~/posts
-        </a>
-        <nav class="flex gap-6 text-sm font-medium">
-          <a href={baseUrl} class="hover:underline">首页</a>
-          <a href={`${baseUrl}about/`} class="hover:underline">关于</a>
-        </nav>
+      <div class="max-w-3xl mx-auto px-4 sm:px-6">
+        <div class="flex flex-col sm:h-16 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex h-14 items-center sm:h-auto">
+            <a href={baseUrl} class="font-bold text-lg hover:text-zinc-600 dark:hover:text-zinc-300 transition">
+              ~/posts
+            </a>
+          </div>
+          <nav class="flex gap-4 overflow-x-auto whitespace-nowrap pb-2 text-sm font-medium sm:gap-6 sm:overflow-visible sm:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="主导航">
+            <a href={baseUrl} class="flex min-h-11 flex-none items-center hover:underline sm:min-h-0">首页</a>
+            <a href={`${baseUrl}html5/`} data-nav="html5" class="flex min-h-11 flex-none items-center hover:underline sm:min-h-0">HTML5</a>
+            <a href={`${baseUrl}dart/`} data-nav="dart" class="flex min-h-11 flex-none items-center hover:underline sm:min-h-0">Dart</a>
+            <a href={`${baseUrl}rust/`} data-nav="rust" class="flex min-h-11 flex-none items-center hover:underline sm:min-h-0">Rust</a>
+            <a href={`${baseUrl}uiux/`} data-nav="uiux" class="flex min-h-11 flex-none items-center hover:underline sm:min-h-0">UI/UX</a>
+            <a href={`${baseUrl}about/`} class="flex min-h-11 flex-none items-center hover:underline sm:min-h-0">关于</a>
+          </nav>
+        </div>
       </div>
     </header>
 
