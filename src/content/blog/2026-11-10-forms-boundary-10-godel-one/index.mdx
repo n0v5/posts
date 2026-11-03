@@ -1,0 +1,135 @@
+---
+title: "对角线方法与自指：第一不完备定理"
+pubDate: 2026-11-10
+description: "用对角线引理构造说‘我不是可证的’的 Gödel 句，证明一致且递归公理化的算术理论不完备，并澄清定理的适用范围。"
+tags: ["元数学", "逻辑", "不完备性"]
+series: "forms-boundary"
+seriesPart: 2
+seriesOrder: 10
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 9 篇：Gödel 编码、可表示性、Σ₁ 公式、对角线引理。
+- 第 3–4 篇：一致性、证明系统、完备性。
+
+## 本篇新术语
+
+- **可证性谓词**：算术中表示“某个编码的公式可证”的公式。
+- **Gödel 句**：通过自指构造出的、等价于“自己不可证”的句子。
+- **ω-一致**：不存在公式 $\varphi(x)$ 使理论证明 $\exists x\,\varphi(x)$，同时对每个自然数 $n$ 都证明 $\neg\varphi(\overline{n})$。
+- **Rosser 句**：用“更小的反证”改写的自指句，使一致性足以推出独立性。
+- **不完备**：存在句子及其否定都不可证。
+
+## 问题：算术能证明所有关于自己的真理吗？
+
+第 9 篇让算术可以谈论自己的语法。现在把自指用在“可证性”上：构造一个句子 $G$，它说“$G$ 在 $T$ 中不可证”。如果 $T$ 证明了 $G$，那么 $G$ 为真，于是 $G$ 不可证，矛盾；如果 $T$ 证明 $\neg G$，则需要更强的假设才能排除。
+
+这不是文字游戏。$G$ 是一个普通的算术句子，只是它的内容经过编码后指向自己的编号。Gödel 的天才之处在于把这个自指变成可表示性定理的直接应用。
+
+<Definition number="10.1" title="可证性谓词">
+设 $T$ 是递归公理化的算术理论。用 $\mathrm{Proof}_T(x,y)$ 表示“$x$ 是 $T$ 中公式编码为 $y$ 的证明的编码”。这是一个原始递归关系，因此可在 $Q$ 中表示。定义
+
+$$
+\mathrm{Prov}_T(y)=\exists x\,\mathrm{Proof}_T(x,y).
+$$
+
+$\mathrm{Prov}_T$ 是 Σ₁ 公式。若 $T$ 一致，$\mathrm{Con}(T)$ 定义为 $\neg\mathrm{Prov}_T(\ulcorner 0=1\urcorner)$。
+</Definition>
+
+<Metaphor title="句子照镜子" breaking="句子并不字面包含自己的代码；它通过编码函数与固定点方程‘看见’自己。自指是数学构造，不是意识或循环定义。">
+把 Gödel 句想成一面镜子：镜子里的影像指向镜子本身，但影像不是镜子。$G$ 通过 $\mathrm{diag}$ 得到自己的编号，于是它谈论的“$G$”是编码后的自己。这个比喻能帮助你记住固定点，但不能说明句子有自我意识。
+</Metaphor>
+
+**易错边界**：$G$ 不是“这句话是假的”。说谎者句直接否定自己的真值，导致语义悖论；$G$ 否定的是“自己在 $T$ 中可证”，这是一个关于证明的算术命题，不是关于真值的直接否定。两者的技术处理与哲学后果不同。
+
+## 第一不完备定理
+
+<Theorem number="10.1" title="Gödel 第一不完备定理（简单形式）">
+设 $T$ 是 $Q$ 的 consistent、递归公理化扩张。则存在句子 $G$，使 $G$ 在标准自然数模型中为真，但 $T\nvdash G$。若 $T$ 还是 ω-一致的，则 $T\nvdash\neg G$，因此 $T$ 不完备。
+</Theorem>
+
+<Proof>
+由对角线引理，取 $G$ 使
+
+$$
+T\vdash G\leftrightarrow\neg\mathrm{Prov}_T(\ulcorner G\urcorner).
+$$
+
+**第一步：$T\nvdash G$。** 反设 $T\vdash G$。由于 $T$ 递归公理化，存在一个具体的 $T$-证明；$\mathrm{Proof}_T$ 可表示，所以 $T\vdash\mathrm{Prov}_T(\ulcorner G\urcorner)$。另一方面，由 $G$ 与等价式，$T\vdash\neg\mathrm{Prov}_T(\ulcorner G\urcorner)$。这与 $T$ 一致矛盾。因此 $T\nvdash G$。
+
+**第二步：$G$ 在标准模型中为真。** 若 $G$ 在标准模型中为假，则 $\neg G$ 为真，即 $\mathrm{Prov}_T(\ulcorner G\urcorner)$ 在标准模型中为真。于是存在一个标准证明，$T\vdash G$，与第一步矛盾。因此 $G$ 在标准模型中为真。
+
+**第三步：ω-一致时 $T\nvdash\neg G$。** 反设 $T\vdash\neg G$。由等价式，$T\vdash\mathrm{Prov}_T(\ulcorner G\urcorner)$。ω-一致性保证这个存在命题有标准自然数见证，即存在一个真正的 $T$-证明，于是 $T\vdash G$，与第一步矛盾。因此 $T\nvdash\neg G$。
+</Proof>
+
+第三步的 ω-一致性假设可以去掉。Rosser 把 $G$ 改成
+
+$$
+R\leftrightarrow\forall x\bigl(\mathrm{Proof}_T(x,\ulcorner R\urcorner)\to\exists y\le x\,\mathrm{Proof}_T(y,\ulcorner\neg R\urcorner)\bigr),
+$$
+
+即“若我有一份证明，那么更早有一份我的否定的证明”。在只假设一致的情况下，可以证明 $T\nvdash R$ 且 $T\nvdash\neg R$。证明思路是：若 $T\vdash R$，取最小证明；Rosser 句要求存在更小的 $\neg R$ 证明，导致矛盾；若 $T\vdash\neg R$，类似地取最小证明，并利用“不存在更小的 $R$ 证明”得到 $R$ 在标准模型中为真，进而 $T\vdash R$，矛盾。细节属于证明骨架，不逐行展开。
+
+## 定理的边界
+
+Gödel 第一定理常被误读为“人类永远无法知道数学真理”或“所有系统都不完备”。它的实际内容是：
+
+- 只适用于**递归公理化**且能表示基本算术的理论。$\mathrm{Th}(\mathbb{N})$（标准模型中所有真句子）是完备的，但它不是递归公理化的；定理不适用于它。
+- 结论是“存在不可判定的句子”，不是“每个句子都不可判定”。
+- 它不直接说明 $G$ 在哲学上“为真”是什么意思；这里的“真”指在标准自然数模型中为真。
+- 它不否定更强的理论能证明 $G$：$T+\mathrm{Con}(T)$ 或更强的系统可以证明 $G$，但会有自己的 Gödel 句。
+
+<Theorem number="10.2" title="完备且递归公理化的理论可判定">
+若 $T$ 是递归公理化的且完备，则 $T$ 可判定。
+</Theorem>
+
+<Proof>
+给定句子 $\varphi$，交错枚举所有 $T$-证明，寻找 $\varphi$ 的证明与 $\neg\varphi$ 的证明。由完备性，二者必有一个；由递归公理化，证明枚举可计算。因此过程终会停机，给出答案。
+</Proof>
+
+推论：$\mathrm{Th}(\mathbb{N})$ 不是递归公理化的。否则它完备、递归公理化，因而可判定；但由 Gödel 第一定理，它不能既是递归公理化又一贯地捕捉所有标准真理——更直接地说，若它递归公理化，就会有一个不可判定的 Gödel 句，与它的完备性矛盾。
+
+## 替代方案与冗余分析
+
+- **语义证明**：用 Tarski 不可定义性推出不完备性；它更短，但依赖真理不可定义。
+- **Rosser 改进**：把 ω-一致性降为一致性，代价是句子更复杂。
+- **可计算性证明**：用停机问题的不可判定性反推；它强调“完备可判定”与“递归公理化”的冲突。
+- **把 Gödel 句当成悖论**：它不是悖论；它在标准模型中为真，只是 $T$ 无法证明它。
+
+## 习题
+
+<Exercise number="10.1" title="为什么是 Σ₁">
+解释 $\mathrm{Prov}_T(y)$ 为什么是 Σ₁ 公式；它的见证是什么？
+</Exercise>
+
+<Exercise number="10.2" title="完备与可判定">
+证明：完备且递归公理化的理论可判定，并说明这与 $\mathrm{Th}(\mathbb{N})$ 的关系。
+</Exercise>
+
+<Exercise number="10.3" title="真理与可证">
+Gödel 句在标准模型中为真，却不可证。这里的“真”与“可证”分别在哪一层语言中定义？
+</Exercise>
+
+<Exercise number="10.4" title="开放题">
+如果给 $T$ 加上 $G$ 作为新公理，会得到什么？新理论是否完备？它会有自己的 Gödel 句吗？
+</Exercise>
+
+<Hint>第 10.1 题的见证是一段证明的编码。第 10.4 题考虑 $T+G$ 仍然递归公理化，并应用第一定理。</Hint>
+
+## 自学检查单
+
+- 我能写出 Gödel 句的固定点方程吗？
+- 我知道第一定理需要哪些假设吗？
+- 我能区分“$G$ 为真”与“$T$ 证明 $G$”吗？
+- 我知道 $\mathrm{Th}(\mathbb{N})$ 为什么不适用第一定理吗？
+- 我是否把 Gödel 句当成了说谎者悖论？
+
+## 本章核对来源
+
+- Boolos–Burgess–Jeffrey, *Computability and Logic*, 5th ed., 第 17–18 章：第一不完备定理与 Rosser 定理。
+- Smullyan, *Gödel's Incompleteness Theorems*：自指与可证性谓词的标准表述。
+- Open Logic Project, *Sets, Logic, Computation*：Gödel 第一定理章节。
+- Rosser 句的证明与 ω-一致性细节标为证明骨架；本篇完整展开简单形式的三个步骤。

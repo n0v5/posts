@@ -1,0 +1,156 @@
+---
+title: "完备性：Henkin 构造与典范模型"
+pubDate: 2026-11-04
+description: "证明一阶逻辑的完备性：凡是语义后承，都存在形式证明。核心是 Henkin 常项、极大一致集与典范模型的真值引理。"
+tags: ["元数学", "逻辑", "一阶逻辑", "证明论"]
+series: "forms-boundary"
+seriesPart: 1
+seriesOrder: 4
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 1–3 篇：结构、满足、语义后承、Hilbert 系统、一致性与可靠性。
+- 可数语言、有限序列、归纳法。
+
+## 本篇新术语
+
+- **极大一致集**：一致的公式集，且加入任何不属于它的公式都会变得不一致。
+- **Henkin 理论**：对每个存在公式，理论里都有一个常项作为见证。
+- **典范模型**：由极大一致 Henkin 理论的项与公式直接构造出的模型。
+- **完备性**：凡是语义后承，都存在形式证明。
+
+## 问题：可靠之外，还要够用
+
+第 3 篇证明了可靠性：可推出的一定有效。但一个只包含 A1 的系统也可靠，却可能漏掉大量有效公式。我们需要另一个方向：**凡是语义上成立的，都能在系统里写出来**。
+
+这不是“所有真理都能被证明”的豪言。它只针对一阶逻辑的有效性与后承：若 $\Gamma\models\varphi$，则 $\Gamma\vdash\varphi$。算术真理、集合论真理不在此列；Gödel 后来会说明为什么不能把这句话无限放大。
+
+证明完备性的路线不是直接构造一个证明，而是反过来：先证明“每个一致的公式集都有模型”。若 $\Gamma\nvdash\varphi$，则 $\Gamma\cup\{\neg\varphi\}$ 一致；若它有一个模型，就说明 $\Gamma\nvDash\varphi$。取逆否，便得到 $\Gamma\models\varphi$ 蕴含 $\Gamma\vdash\varphi$。
+
+## 极大一致集与 Henkin 见证
+
+<Definition number="4.1" title="极大一致与 Henkin 理论">
+设 $\Gamma$ 是一组公式。
+
+- $\Gamma$ 是**极大一致**的，若 $\Gamma$ 一致，且对任意公式 $\varphi$，$\Gamma\cup\{\varphi\}$ 一致就蕴含 $\varphi\in\Gamma$。
+- $\Gamma$ 是 **Henkin 理论**，若对每个形如 $\exists x\,\varphi(x)$ 的公式，存在一个常项 $c$，使 $\exists x\,\varphi(x)\to\varphi(c)\in\Gamma$。
+</Definition>
+
+极大一致性是语法性质：它只谈“加进去会不会产生矛盾”。Henkin 性质也是语法性质：它为每个存在命题准备一个名字。两者合起来，才能让“存在”在典范模型中真的有见证。
+
+<Metaphor title="补全一张没有矛盾的地图" breaking="极大一致集不是‘所有真理的集合’，它只是对当前语言里每个公式决定收不收；它的语义意义要等典范模型与真值引理证明之后才出现。">
+把一致的公式集想成一张还没补全的地图：每加入一个公式，就决定一片区域；极大一致要求对每个公式都做出决定，同时不制造矛盾。Henkin 常项则像给每个“存在某物”的断言配一个坐标名。
+</Metaphor>
+
+**易错边界**：不要用“有模型”来定义极大一致。我们还没有证明一致集有模型；那正是本篇要证的东西。若先把“一致”解释成“有模型”，完备性就变成循环论证。
+
+## 从一致集到 Henkin 理论
+
+<Theorem number="4.1" title="Henkin 扩张">
+设 $\Gamma$ 是可数语言中的一致公式集。则存在一个可数语言扩张，使 $\Gamma$ 在其中被扩张为一个极大一致的 Henkin 理论。
+</Theorem>
+
+<Proof sketch>
+分两步。
+
+**第一步：加见证。** 枚举所有形如 $\exists x\,\varphi(x)$ 的公式。对第 $n$ 个公式，若它尚未被处理，就引入一个全新的常项 $c_n$，并把 $\exists x\,\varphi(x)\to\varphi(c_n)$ 加入。新常项不曾在旧语言中出现，因此不会与旧公式产生意外的等式或关系约束；若加入后不一致，则由 $c_n$ 不在旧语言中，原集合会同时推出 $\exists x\,\varphi(x)$ 与 $\forall x\,\neg\varphi(x)$，与一致性矛盾。反复可数步，得到一个 Henkin 理论 $H\supseteq\Gamma$。
+
+**第二步：补成极大一致。** 枚举扩张语言中的所有公式 $\psi_0,\psi_1,\dots$。从 $H_0=H$ 开始，若 $H_n\cup\{\psi_n\}$ 一致，就令 $H_{n+1}=H_n\cup\{\psi_n\}$；否则令 $H_{n+1}=H_n\cup\{\neg\psi_n\}$。每一步都保持一致性，因为若两边都不一致，$H_n$ 本身就不一致。令 $H_\omega=\bigcup_n H_n$。任何有限子集都包含在某个 $H_n$ 中，所以 $H_\omega$ 一致；对任意 $\psi$，它已在某个阶段被决定，因此 $H_\omega$ 极大一致。Henkin 性质在扩张中保持。
+</Proof>
+
+第二步的枚举依赖语言可数。一般签名需要超限递归与足够多的新常项；本系列先处理可数情形，避免在集合论工具尚未建立时预支基数算术。
+
+## 典范模型与真值引理
+
+<Definition number="4.2" title="典范模型">
+设 $\Gamma$ 是极大一致 Henkin 理论。取所有闭项（不含自由变量的项）作为论域的原料，并按“$\Gamma$ 证明两者相等”作商：$[t]=\{s: t=s\in\Gamma\}$。常量 $c$ 解释为 $[c]$；函数符号按语法解释；关系符号 $R$ 解释为：$R([t_1],\dots,[t_n])$ 成立当且仅当 $R(t_1,\dots,t_n)\in\Gamma$。这个结构记作 $\mathcal{A}_\Gamma$。
+</Definition>
+
+需要检查这些解释是良定义的：若 $t=t'$ 与 $s=s'$ 都在 $\Gamma$ 中，则 $R(t,s)$ 与 $R(t',s')$ 在 $\Gamma$ 中同真同假。这由等号公理与极大一致性保证；细节属于机械验证。
+
+<Theorem number="4.2" title="真值引理">
+对任意公式 $\varphi(x_1,\dots,x_n)$ 与闭项 $t_1,\dots,t_n$，在典范模型中给变量赋值为 $[t_i]$，有 $\mathcal{A}_\Gamma\models\varphi([t_1],\dots,[t_n])$ 当且仅当 $\varphi(t_1,\dots,t_n)\in\Gamma$。
+</Theorem>
+
+<Proof sketch>
+对公式结构做归纳。
+
+- 原子公式：由典范模型的关系解释直接得到。
+- 否定：极大一致集对每个公式恰好收一个方向，$\neg\psi\in\Gamma$ 当且仅当 $\psi\notin\Gamma$。这需要先证极大一致集的演绎封闭性与“二选一”性质。
+- 连接词：由归纳假设与 $\Gamma$ 对经典连接词的演绎封闭性得到。
+- 存在量词：若 $\exists x\,\psi(x)\in\Gamma$，Henkin 性质给出常项 $c$ 使 $\exists x\,\psi(x)\to\psi(c)\in\Gamma$；由分离规则得 $\psi(c)\in\Gamma$，归纳假设给出见证。反过来，若存在见证 $[t]$ 使 $\psi(t)\in\Gamma$，则由存在概括与演绎封闭性得 $\exists x\,\psi(x)\in\Gamma$。
+- 全称量词：用 $\forall x\,\psi(x)$ 与 $\neg\exists x\,\neg\psi(x)$ 的经典等价，化归到存在情形；或直接对全称做对称论证。
+</Proof>
+
+真值引理是完备性证明的技术飞跃：它把“属于理论”与“在典范模型中为真”对齐。没有 Henkin 性质，存在量词方向会断裂；没有极大一致性，否定方向会断裂。
+
+## 模型存在与完备性
+
+<Theorem number="4.3" title="模型存在定理">
+每个一致的公式集都有模型。若语言可数，模型也可数。
+</Theorem>
+
+<Proof>
+由 Henkin 扩张定理，把一致集扩张为极大一致 Henkin 理论 $\Gamma^+$。取典范模型 $\mathcal{A}_{\Gamma^+}$。由真值引理，对每个 $\varphi\in\Gamma^+$，$\mathcal{A}_{\Gamma^+}\models\varphi$；特别地，$\Gamma$ 中的公式都在模型中为真。论域由可数个闭项作商得到，因此模型可数。
+</Proof>
+
+<Theorem number="4.4" title="完备性定理">
+对任意公式集 $\Gamma$ 与公式 $\varphi$，若 $\Gamma\models\varphi$，则 $\Gamma\vdash\varphi$。
+</Theorem>
+
+<Proof>
+反设 $\Gamma\nvdash\varphi$。由经典否定规则，$\Gamma\cup\{\neg\varphi\}$ 一致；否则从它可推出矛盾，进而 $\Gamma\vdash\varphi$。由模型存在定理，存在 $\mathcal{A},s$ 使 $\mathcal{A},s\models\Gamma$ 且 $\mathcal{A},s\models\neg\varphi$。这与 $\Gamma\models\varphi$ 矛盾。因此 $\Gamma\vdash\varphi$。
+</Proof>
+
+结合第 3 篇的可靠性，得到一阶逻辑的核心等价：
+
+$$
+\Gamma\vdash\varphi \quad\text{当且仅当}\quad \Gamma\models\varphi.
+$$
+
+这句话只对一阶逻辑成立。二阶逻辑、无穷逻辑、带广义量词的逻辑都可能有可靠性而没有完备性；后面讨论表达力与独立性时会再遇到边界。
+
+## 替代方案与冗余分析
+
+- **Gödel 原始证明**：通过算术化与原始递归函数构造，技术重心在可表示性；它直接通向不完备定理。
+- **Henkin 证明**：用常项与项模型，结构清晰，便于推广到可数语言与模态逻辑；本篇采用它。
+- **超积证明**：用超滤子构造模型，适合紧致性与模型论；它需要额外的集合论工具，留到后面。
+- **语义表**：从反模型搜索出发，能给出构造性更强的证明，但不是本篇的语法路线。
+
+## 习题
+
+<Exercise number="4.1" title="演绎封闭">
+证明极大一致集是演绎封闭的：若 $\Gamma\vdash\varphi$，则 $\varphi\in\Gamma$。
+</Exercise>
+
+<Exercise number="4.2" title="二选一">
+证明：若 $\Gamma$ 极大一致，则对任意公式 $\varphi$，$\varphi\in\Gamma$ 当且仅当 $\neg\varphi\notin\Gamma$。
+</Exercise>
+
+<Exercise number="4.3" title="新常项">
+为什么 Henkin 扩张必须使用全新的常项？如果重复使用旧常项，可能在第一步出什么问题？
+</Exercise>
+
+<Exercise number="4.4" title="开放题">
+完备性说“有效就能证明”，为什么它没有给出一个实际寻找证明的算法？
+</Exercise>
+
+<Hint>第 4.1 题用极大性：若 $\varphi\notin\Gamma$，则 $\Gamma\cup\{\varphi\}$ 不一致。第 4.2 题先证不能同时属于，再证不能同时不属于。</Hint>
+
+## 自学检查单
+
+- 我能区分一致、极大一致与 Henkin 理论吗？
+- 我知道完备性证明为什么先证“一致集有模型”吗？
+- 我能说出真值引理中 Henkin 性质用在哪一步吗？
+- 我知道典范模型的论域是什么吗？
+- 我是否把“完备性”误解成了“所有数学真理都可证”？
+
+## 本章核对来源
+
+- Enderton, *A Mathematical Introduction to Logic*, 2nd ed., 第 2 章：完备性与 Henkin 构造。
+- Ebbinghaus–Flum–Thomas, *Mathematical Logic*, 第 4–5 章：模型存在与完备性。
+- Open Logic Project, *Sets, Logic, Computation*：完备性、Henkin 理论与典范模型章节。
+- 本篇按可数语言给出 Henkin 构造的证明骨架；一般签名的超限扩张与等号商结构的机械验证未展开。

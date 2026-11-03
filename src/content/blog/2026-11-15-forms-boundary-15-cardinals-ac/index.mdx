@@ -1,0 +1,140 @@
+---
+title: "基数、选择公理与基数算术"
+pubDate: 2026-11-15
+description: "用等势定义基数，证明 Cantor 定理，介绍选择公理及其等价形式，建立基数算术与共尾性的基本图景。"
+tags: ["元数学", "集合论", "基数", "选择公理"]
+series: "forms-boundary"
+seriesPart: 3
+seriesOrder: 15
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 14 篇：序数、良序、超限递归。
+- 双射、单射、满射；可数与不可数的直观区别。
+
+## 本篇新术语
+
+- **等势**：两个集合之间存在双射。
+- **基数**：等势类的代表；在 ZFC 中通常取最小的序数代表。
+- **可数**：与自然数集等势；**不可数**：不与自然数集等势。
+- **选择公理**：任意非空集合族都有选择函数。
+- **基数算术**：基数的加法、乘法与幂。
+- **共尾性**：无界子集的最小大小，用来区分正则与奇异基数。
+
+## 问题：无限集合怎样“数”？
+
+有限集合可以用自然数数清；无限集合不能数完，但可以比较“能否一一配对”。等势就是这种配对关系：$|A|=|B|$ 当且仅当存在双射 $A\to B$。
+
+这个定义有一个反直觉的后果：自然数、整数、有理数都等势。无限集合可以与自己的真子集等势，这正是无限的本质，而不是矛盾。
+
+<Definition number="15.1" title="等势与基数">
+- $A$ 与 $B$ **等势**，记 $|A|=|B|$，若存在双射 $A\to B$。
+- $|A|\le|B|$，若存在单射 $A\to B$。
+- 一个**基数**是等势类的代表。在 ZFC 中，通常把基数取为最小的、与 $A$ 等势的序数，记作 $|A|$。
+- $A$ 是**可数**的，若 $|A|=\aleph_0=|\mathbb{N}|$；否则是**不可数**的。
+</Definition>
+
+<Theorem number="15.1" title="Cantor 定理">
+对任意集合 $A$，$|A|<|\mathcal{P}(A)|$。
+</Theorem>
+
+<Proof>
+单射 $A\to\mathcal{P}(A)$ 由 $a\mapsto\{a\}$ 给出，所以 $|A|\le|\mathcal{P}(A)|$。反设存在双射 $f:A\to\mathcal{P}(A)$。定义
+
+$$
+D=\{a\in A:a\notin f(a)\}.
+$$
+
+则 $D\subseteq A$，所以 $D\in\mathcal{P}(A)$。由 $f$ 是双射，存在 $d\in A$ 使 $f(d)=D$。问 $d\in D$ 是否成立：
+
+- 若 $d\in D$，按 $D$ 的定义 $d\notin f(d)=D$，矛盾。
+- 若 $d\notin D$，则 $d\in f(d)=D$，矛盾。
+
+因此不存在这样的双射，$|A|<|\mathcal{P}(A)|$。
+</Proof>
+
+取 $A=\mathbb{N}$，得到 $|\mathbb{N}|<|\mathcal{P}(\mathbb{N})|$。因此不可数集合存在；实数集与 $\mathcal{P}(\mathbb{N})$ 等势，这是连续统问题的起点。
+
+## 选择公理
+
+<Definition number="15.2" title="选择公理">
+对任意集合族 $\{A_i:i\in I\}$，若每个 $A_i$ 非空，则存在函数 $f$ 定义在 $I$ 上，使对每个 $i\in I$，$f(i)\in A_i$。这个 $f$ 称为选择函数。
+</Definition>
+
+<Metaphor title="从每个盒子里选一个球" breaking="有限个盒子可以逐个选；无限个盒子时，选择公理断言存在一个统一的选择函数，但不要求它能被某个规则或算法写出。存在不等于可构造。">
+把集合族想成一排盒子，每个盒子里至少有一个球。选择公理说：可以同时从每个盒子里选一个球。这个比喻能说明“选择函数”，但不能说明“我们知道怎么选”；无限族的选择可能是纯粹存在性的。
+</Metaphor>
+
+选择公理有几个常用等价形式：
+
+- **良序定理**：每个集合都能被良序化。
+- **Zorn 引理**：若偏序集的每条链都有上界，则存在极大元。
+- **基数三分**：任意两个基数 $\kappa,\lambda$，必有 $\kappa\le\lambda$ 或 $\lambda\le\kappa$。
+- **乘积非空**：任意非空集合族的笛卡尔积非空。
+
+这些等价形式在 ZFC 中互相推出；在 ZF 中不一定成立。选择公理不是“显然的”：它断言存在一个可能无法定义的选择函数，因此会带来 Banach–Tarski 悖论等反直觉结果；但分析学中的许多定理（如 Hahn–Banach、Tychonoff 乘积定理）又依赖它。
+
+## 基数算术
+
+对基数 $\kappa,\lambda$，定义：
+
+- $\kappa+\lambda=|\kappa\times\{0\}\cup\lambda\times\{1\}|$；
+- $\kappa\cdot\lambda=|\kappa\times\lambda|$；
+- $\kappa^\lambda=|\{f:\lambda\to\kappa\}|$。
+
+在 AC 下，对无限基数 $\kappa,\lambda$，有 $\kappa+\lambda=\kappa\cdot\lambda=\max(\kappa,\lambda)$。幂运算不同：Cantor 定理给出 $2^\kappa>\kappa$；连续统假设问的是 $2^{\aleph_0}$ 是否等于 $\aleph_1$。
+
+**König 定理**：若对每个 $i\in I$ 都有 $\kappa_i<\lambda_i$，则 $\sum_i\kappa_i<\prod_i\lambda_i$。它是 Cantor 定理的推广，也是基数算术中少数不依赖 AC 的深刻不等式之一。
+
+## 共尾性
+
+基数 $\kappa$ 的**共尾性** $\mathrm{cf}(\kappa)$ 是最小的序数 $\lambda$，使得存在无界函数 $\lambda\to\kappa$。若 $\mathrm{cf}(\kappa)=\kappa$，称 $\kappa$ 正则；否则称奇异。
+
+- $\mathrm{cf}(\aleph_0)=\aleph_0$，所以 $\aleph_0$ 正则。
+- 在 AC 下，后继基数 $\kappa^+$ 正则；极限基数可能是奇异的，例如 $\aleph_\omega$ 的共尾性是 $\omega$。
+- König 定理可推出 $\mathrm{cf}(2^\kappa)>\kappa$。
+
+## 替代方案与冗余分析
+
+- **不用 AC**：可以发展 ZF 集合论，但许多基数比较与代数存在性定理会失效；ZF+DC 是常见的折中。
+- **用确定性公理替代 AC**：决定性（AD）与 AC 冲突，但能推出所有实数集具有良好正则性；它在大基数与博弈论中重要。
+- **把基数当成“数量标签”**：基数不是自然数的无限版；它由等势类定义，运算规则与有限数不同。
+- **把 AC 当成构造算法**：AC 只断言存在，不给出选择规则；这是它与“可计算选择”的关键区别。
+
+## 习题
+
+<Exercise number="15.1" title="可数集合">
+构造双射，证明 $|\mathbb{N}|=|\mathbb{Z}|=|\mathbb{Q}|$。
+</Exercise>
+
+<Exercise number="15.2" title="Cantor 定理">
+不看原文，复述 Cantor 定理的对角线证明，并指出 $D$ 的定义为什么依赖 $f$。
+</Exercise>
+
+<Exercise number="15.3" title="有限与无限选择">
+为什么有限个非空集合的选择不需要 AC？举一个无限族，说明选择函数可能无法用规则写出。
+</Exercise>
+
+<Exercise number="15.4" title="开放题">
+选择公理既有反直觉后果，又是现代数学的常用工具。你认为数学家应该接受它吗？请给出一个支持和一个反对的理由。
+</Exercise>
+
+<Hint>第 15.1 题用配对或蛇形枚举。第 15.3 题考虑“每个实数集合选一个代表”或“每个非空实数集选一个元素”。</Hint>
+
+## 自学检查单
+
+- 我能用双射定义等势吗？
+- 我能复述 Cantor 定理的证明吗？
+- 我知道 AC 的几个等价形式吗？
+- 我知道无限基数加法与乘法的简化规则吗？
+- 我是否能区分“存在选择函数”与“能构造选择函数”？
+
+## 本章核对来源
+
+- Kunen, *Set Theory: An Introduction to Independence Proofs*, 第 1 章：基数与 AC。
+- Jech, *Set Theory*, 第 3 章：基数算术与共尾性。
+- Enderton, *Elements of Set Theory*, 第 6 章：等势与 Cantor 定理。
+- König 定理与共尾性的细节只给陈述；本篇完整展开 Cantor 定理。

@@ -1,0 +1,141 @@
+---
+title: "从符号到结构：语法与语义的分工"
+pubDate: 2026-11-01
+description: "用一阶语言、结构与满足关系，把‘公式在什么解释下为真’写成可检查的定义，并说明语法与语义为何不能混为一谈。"
+tags: ["元数学", "逻辑", "一阶逻辑"]
+series: "forms-boundary"
+seriesPart: 1
+seriesOrder: 1
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 0 篇：对象语言与元语言、语法与语义的初步区分。
+- 集合、函数、有序组、关系；数学归纳法。
+
+## 本篇新术语
+
+- **签名**：决定一个一阶语言有哪些常量、函数符号与关系符号的清单。
+- **项**：可以指称论域中对象的表达式。
+- **公式**：可以判断真假的表达式。
+- **结构**：给签名中的符号指定论域与解释的数学对象。
+- **赋值**：给变量指定论域中对象的函数。
+- **满足**：结构加赋值使公式为真的关系。
+
+## 问题：为什么需要“结构”？
+
+第 0 篇已经看到，同一个公式可以在不同解释下取不同真值。现在要把“解释”写成精确的数学对象。否则我们只能说“这句话在这个意思下是真的”，却无法证明关于所有解释的定理。
+
+一阶逻辑的做法是：先固定一个**签名**，它只说明有哪些符号、每个符号要几个参数；然后允许变量在某个**论域**中取值；最后用一个**结构**解释常量、函数和关系。公式本身仍然只是符号串，结构才给它意义。
+
+<Definition number="1.1" title="一阶语言与公式">
+给定签名 $\sigma$，它由三类符号组成：常量符号、函数符号（每个带一个正整数元数）、关系符号（每个带一个正整数元数）。一阶语言还包含可数多个变量 $x_0,x_1,\dots$，逻辑连接词 $\neg,\land,\lor,\to$，量词 $\forall,\exists$，以及等号 $=$。
+
+**项**按以下规则生成：变量是项；常量符号是项；若 $f$ 是 $n$ 元函数符号，$t_1,\dots,t_n$ 是项，则 $f(t_1,\dots,t_n)$ 是项。
+
+**公式**按以下规则生成：若 $R$ 是 $n$ 元关系符号，$t_1,\dots,t_n$ 是项，则 $R(t_1,\dots,t_n)$ 是原子公式；若 $t_1,t_2$ 是项，则 $t_1=t_2$ 是原子公式；原子公式是公式；若 $\varphi,\psi$ 是公式，则 $\neg\varphi$、$(\varphi\land\psi)$、$(\varphi\lor\psi)$、$(\varphi\to\psi)$ 是公式；若 $\varphi$ 是公式、$x$ 是变量，则 $\forall x\,\varphi$ 与 $\exists x\,\varphi$ 是公式。
+</Definition>
+
+这个定义只讲形状。$f(t_1,\dots,t_n)$ 是否真的指称某个对象，$R(t_1,\dots,t_n)$ 是否为真，都要等结构出场。
+
+<Definition number="1.2" title="结构与赋值">
+签名 $\sigma$ 的一个**结构** $\mathcal{A}$ 包含：
+
+1. 一个非空论域 $A$；
+2. 对每个常量符号 $c$，一个元素 $c^{\mathcal{A}}\in A$；
+3. 对每个 $n$ 元函数符号 $f$，一个函数 $f^{\mathcal{A}}:A^n\to A$；
+4. 对每个 $n$ 元关系符号 $R$，一个关系 $R^{\mathcal{A}}\subseteq A^n$。
+
+一个**赋值**是函数 $s:\mathrm{Var}\to A$。若 $s$ 是赋值、$a\in A$、$x$ 是变量，则 $s[x\mapsto a]$ 表示把 $x$ 的值改成 $a$、其余变量保持不变的赋值。
+</Definition>
+
+项的指称由递归定义：变量 $x$ 的值为 $s(x)$；常量 $c$ 的值为 $c^{\mathcal{A}}$；复合项 $f(t_1,\dots,t_n)$ 的值为 $f^{\mathcal{A}}(t_1^{\mathcal{A}}[s],\dots,t_n^{\mathcal{A}}[s])$。
+
+满足关系 $\mathcal{A},s\models\varphi$ 也按公式的构造递归定义：
+
+- $\mathcal{A},s\models R(t_1,\dots,t_n)$ 当且仅当 $(t_1^{\mathcal{A}}[s],\dots,t_n^{\mathcal{A}}[s])\in R^{\mathcal{A}}$；
+- $\mathcal{A},s\models t_1=t_2$ 当且仅当 $t_1^{\mathcal{A}}[s]=t_2^{\mathcal{A}}[s]$；
+- $\mathcal{A},s\models\neg\varphi$ 当且仅当并非 $\mathcal{A},s\models\varphi$；
+- $\mathcal{A},s\models\varphi\land\psi$ 当且仅当两者都满足；析取与蕴含按经典真值表处理；
+- $\mathcal{A},s\models\forall x\,\varphi$ 当且仅当对所有 $a\in A$，都有 $\mathcal{A},s[x\mapsto a]\models\varphi$；
+- $\mathcal{A},s\models\exists x\,\varphi$ 当且仅当存在 $a\in A$，使 $\mathcal{A},s[x\mapsto a]\models\varphi$。
+
+<Metaphor title="公式是程序，结构是运行环境，赋值是输入" breaking="程序会执行、消耗资源、产生副作用；公式的满足是一个数学关系，没有执行时间，也不改变结构。量词不是循环，赋值也不是可变内存。">
+把公式想成一段程序：结构提供它运行的世界，赋值给出自由变量的初始值。这个类比能帮助你记住“公式单独没有真值，必须相对于结构”，但它不能解释证明、可计算性或资源限制。
+</Metaphor>
+
+**易错边界**：满足 $\mathcal{A},s\models\varphi$ 不等于“$\varphi$ 可证”，也不等于“$\varphi$ 在所有结构中为真”。它只说：在这个结构、这个赋值下，公式成立。
+
+## 一个具体语言：序
+
+取签名只含一个二元关系符号 $<$。公式
+
+$$
+\forall x\,\exists y\,(x<y)
+$$
+
+在 $(\mathbb{Q},<)$ 与 $(\mathbb{N},<)$ 中都为真：任何有理数或自然数都有更大的同类。换一个公式：
+
+$$
+\exists x\,\forall y\,(x<y)
+$$
+
+它在 $(\mathbb{N},<)$ 中为真（取最小元 $0$），但在 $(\mathbb{Z},<)$ 中为假（整数没有最小元）。同一个符号串，因结构不同而真值不同。
+
+这个例子也提醒我们：**不要凭日常直觉判断公式的真值**。先把结构写清楚，再逐条核对量词。
+
+## 满足关系的确定性
+
+<Theorem number="1.1" title="经典语义下每个公式在给定结构与赋值下有唯一真值">
+对任意结构 $\mathcal{A}$、赋值 $s$ 与公式 $\varphi$，恰好有 $\mathcal{A},s\models\varphi$ 或 $\mathcal{A},s\models\neg\varphi$ 之一成立。
+</Theorem>
+
+<Proof>
+对公式 $\varphi$ 的结构做归纳。原子公式由项的值与关系 $R^{\mathcal{A}}$ 决定，项的值由递归定义唯一确定。若 $\varphi=\neg\psi$，由归纳假设 $\psi$ 有唯一真值，取反即可。若 $\varphi=\psi\land\chi$ 或 $\psi\lor\chi$，由两个子公式的真值按经典真值表唯一确定。若 $\varphi=\forall x\,\psi$，则对每个 $a\in A$，$\psi$ 在 $s[x\mapsto a]$ 下有唯一真值；全称量词要求所有 $a$ 都为真，因此结果唯一。存在量词同理。归纳完成。
+</Proof>
+
+这个证明没有处理“公式是否可证”，只处理“公式在结构中是否为真”。把这两件事分开，是下一步讨论可靠性与完备性的前提。
+
+## 替代方案与冗余分析
+
+- **只讲语法**：可以把公式当成字符串操作，但无法解释为什么某些公式“应该”为真，也无法陈述可靠性。
+- **只讲语义**：可以定义有效性与后承，但无法讨论机械证明与可计算性。
+- **布尔值语义**：在命题逻辑中，用真值指派代替一阶结构已经足够；一阶逻辑需要结构，因为量词要遍历论域。
+- **代数语义**：用布尔代数或 Heyting 代数解释公式；它与结构语义等价，但更抽象。本系列先用结构语义，因为更接近“公式在某个世界中为真”的直觉。
+
+## 习题
+
+<Exercise number="1.1" title="至少两个元素">
+在带等号的一阶语言中，写出一个公式，表示“论域至少有两个元素”。
+</Exercise>
+
+<Exercise number="1.2" title="全称实例">
+证明：对任意结构 $\mathcal{A}$、赋值 $s$、常量 $c$，若 $\mathcal{A},s\models\forall x\,P(x)$，则 $\mathcal{A},s\models P(c)$。
+</Exercise>
+
+<Exercise number="1.3" title="构造反例">
+给出一个结构，使 $\exists x\,P(x)\land\exists x\,\neg P(x)$ 为真。
+</Exercise>
+
+<Exercise number="1.4" title="开放题">
+为什么“公式合法”不能保证“公式有真值”？请用本篇的定义回答，不要用“因为符号没有意义”这种循环说法。
+</Exercise>
+
+<Hint>第 1.1 题可以用 $\exists x\,\exists y\,\neg(x=y)$。第 1.2 题把全称量词的定义用在常量 $c$ 的指称上。</Hint>
+
+## 自学检查单
+
+- 我能写出一个签名，并区分常量、函数符号与关系符号吗？
+- 我能解释项与公式的生成规则吗？
+- 我能说出结构、赋值与满足三者各自负责什么吗？
+- 我知道 $\mathcal{A},s\models\varphi$ 与“$\varphi$ 可证”不是同一件事吗？
+- 我能构造一个让某公式为假的结构吗？
+
+## 本章核对来源
+
+- Enderton, *A Mathematical Introduction to Logic*, 2nd ed., 第 1–2 章：语言、结构、满足关系的标准定义。
+- Ebbinghaus–Flum–Thomas, *Mathematical Logic*, 第 1–2 章：签名与结构的表述。
+- Open Logic Project, *Sets, Logic, Computation*：一阶语言与语义章节，用于交叉核对递归定义。
+- 本篇的满足关系按标准经典语义给出；未引入模型论的高级概念。

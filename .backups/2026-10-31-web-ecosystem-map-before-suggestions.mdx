@@ -1,0 +1,886 @@
+---
+title: "做一个小网站，顺便学完 Web 全栈：Lenslog 成长史"
+pubDate: 2026-10-31
+description: "跟着一个摄影分享站从一张静态页面长到多租户 SaaS 和 AI 摘要：每个技术名词，都是被一次真实事故逼出来的。"
+tags: ["Web", "全栈", "架构", "入门"]
+---
+
+import { Callout } from '../../../components/article/ArticleUI.jsx';
+import GrowthStory from '../../../components/article/GrowthStory.jsx';
+import FlowDiagram from '../../../components/article/FlowDiagram.jsx';
+import SessionSequence from '../../../components/article/SessionSequence.jsx';
+import RequestJourney from '../../../components/article/RequestJourney.jsx';
+import PerformanceWaterfall from '../../../components/article/PerformanceWaterfall.jsx';
+import DeployPipeline from '../../../components/article/DeployPipeline.jsx';
+import AIPipeline from '../../../components/article/AIPipeline.jsx';
+import IndustryChainMap from '../../../components/article/IndustryChainMap.jsx';
+
+你拍了很多照片，想做一个网站，叫 Lenslog。起初它只是电脑上的一个文件夹：一个 `index.html`、一点 CSS、几十张照片。朋友打开链接，能看到你的作品，这就够了。
+
+后来，朋友说图片加载太慢；再后来，你想自己发文章、让朋友评论；朋友想注册、收藏，你开始处理“你是谁”；团队加入，页面和构建越来越乱；访问量上来，数据库和服务器开始报警；要收费、要隔离客户数据；最后，你想让 AI 自动总结每张照片背后的故事。
+
+这条线只有八步：
+
+> 静态页 → 图片加速 → 后端/数据库 → 登录 → 前端工程 → 缓存/队列 → 多租户/实时 → AI
+
+每一个技术名词，都不是因为它在技术树上存在，而是因为 Lenslog 走到某一步，遇到了一个具体的麻烦。下面这张图可以先点着玩；读正文时不用记它。
+
+<GrowthStory client:load />
+
+<Callout type="tip" title="怎么读">
+- **第一次读**：只看故事、每节的“事故”和图，代码和折叠区可以跳过。
+- **第二次读**：照着代码把故障复现一遍，再改一次。
+- **遇到新词**：先问它在哪一层、什么时候生效、谁调用谁；这三问能过滤掉大部分焦虑。
+</Callout>
+
+## 1. 只有一个 HTML 页面：先把“能看到”跑通
+
+### 现场还原
+
+Lenslog v1 只有三个文件：`index.html`、`styles.css`、`app.js`。你把整个文件夹拖到静态托管平台，绑定 `lenslog.com`，然后把链接发给朋友。
+
+### 事故爆发
+
+朋友打开链接，页面出来了，但所有照片都是裂图。你打开浏览器 DevTools 的 Network 面板，看到：
+
+```text
+GET https://lenslog.com/photos/cover.jpg   404 (Not Found)
+GET https://lenslog.com/photos/sunset.jpg  404 (Not Found)
+```
+
+你本地明明能看到。问题在于：Windows 文件名是 `Photos/Cover.JPG`，部署到 Linux 后路径区分大小写；HTML 里又写了一个以 `/` 开头的绝对路径，部署到子目录后指向了错误位置。
+
+另一个朋友连页面都打不开，浏览器只显示 `DNS_PROBE_FINISHED_NXDOMAIN`。这说明域名还没有解析到托管平台。
+
+### 机制：一次静态请求发生了什么
+
+<FlowDiagram
+  title="静态页面"
+  caption="没有数据库、没有应用服务器：浏览器拿到的就是提前放好的文件。"
+  steps={[
+    { title: '浏览器', detail: '输入 https://lenslog.com，先向 DNS 询问域名对应的 IP。' },
+    { title: 'DNS', detail: '把域名解析到静态托管平台；没配好就是 NXDOMAIN。' },
+    { title: '静态托管', detail: '按 URL 路径找文件。路径大小写、目录层级都会影响 404。' },
+    { title: '浏览器渲染', detail: '解析 HTML，继续请求 CSS、JS 和图片，然后排版、绘制。' },
+  ]}
+  note="静态托管的职责只有“按路径返回文件”；它不会替你查数据库，也不会执行后端代码。"
+/>
+
+这里第一次出现了三个词：
+
+- **HTML（HyperText Markup Language，超文本标记语言）** 是页面结构，浏览器按它创建 **DOM（Document Object Model，文档对象模型）** 树；照片裂图说明 DOM 里的 `src` 指向了一个不存在的地址。
+- **HTTP（Hypertext Transfer Protocol，超文本传输协议）状态码** 是服务器的回执。`200` 是成功，`404` 是路径没找到，`500` 是服务器自己出错。排障先看状态码，不要先猜 CSS。
+- **DNS（Domain Name System，域名系统）** 是域名到 IP 的地址簿。`NXDOMAIN` 不是网站挂了，而是域名还没有解析记录。
+- **TLS（Transport Layer Security，传输层安全）** 负责加密和证书验证；HTTPS 就是 HTTP over TLS。
+
+### 修复：路径、DNS、HTTPS
+
+```html
+<!-- 不要写死本机路径，也不要依赖大小写 -->
+<img src="/photos/cover.jpg" alt="傍晚的湖面" width="1200" height="800" loading="lazy" />
+```
+
+修复步骤只有三件：
+
+1. 把文件名统一成小写，HTML 路径与实际文件一致；本地用 `python -m http.server` 或开发服务器预览，不要直接双击 `file://`。
+2. 在 DNS 服务商添加 A/AAAA/CNAME 记录，等 TTL 生效；用 `dig lenslog.com` 或浏览器开发者工具确认解析结果。
+3. 开启 HTTPS，确认证书域名匹配。证书错误时，浏览器会在请求发出前就拦截。
+
+**这一步的技术栈：** HTML/CSS/JS + 静态托管 + DNS + HTTPS。没有数据库，没有后端框架，也不需要 React。
+
+<Callout type="pitfall" title="“本地能打开，线上怎么 404？”">
+本地双击 HTML 用的是 `file://` 协议，路径规则和线上 HTTP 不一样。上线前用本地 HTTP 服务器预览，并检查控制台 Network 面板中的真实请求 URL。
+</Callout>
+
+## 2. 照片变多：80MB 的首页和 CDN
+
+### 现场还原
+
+Lenslog 有了 2000 张照片。首页一次性渲染 40 张原图，每张 2–6MB。你在手机上打开，白屏了很久；外地朋友说“像在看幻灯片”。
+
+### 事故爆发
+
+Lighthouse 报告：
+
+```text
+Largest Contentful Paint   8.4 s
+Total page size            82.6 MB
+Requests                   47
+```
+
+这里的 **LCP（Largest Contentful Paint，最大内容绘制）** 是首屏最大内容出现的时间；8.4 秒意味着用户盯着白屏太久。
+
+Network 面板里，40 张原图全部以全尺寸下载，页面底部还有几张根本没滚到的照片。你的服务器带宽账单也开始上涨。
+
+### 机制：图片不是“传到服务器就完了”
+
+用户需要的不是 6000×4000 的原图，而是在当前屏幕尺寸下够用的缩略图。图片要经过一条处理链：
+
+<FlowDiagram
+  title="图片从上传到浏览器"
+  caption="同一张原图生成多种尺寸和格式，浏览器只下载当前屏幕需要的那一张。"
+  steps={[
+    { title: '上传原图', detail: '原图进对象存储，作为素材保留，不直接发给浏览器。' },
+    { title: '生成多尺寸', detail: '构建或上传时生成 480/1024/1920 宽度的 WebP/AVIF，并保留宽高。' },
+    { title: 'CDN 边缘', detail: '图片放在离用户更近的节点；命中缓存时不回源。' },
+    { title: '浏览器选择', detail: 'srcset 按屏幕密度和宽度选择文件；loading="lazy" 推迟屏幕外图片。' },
+  ]}
+  note="CDN 命中率取决于缓存键、TTL 和文件版本；带用户身份的 HTML 不要放公共缓存。"
+/>
+
+**CDN（Content Delivery Network，内容分发网络）** 不是“更快的服务器”，而是一层离用户更近的缓存。它第一次没命中时会回源到**对象存储（object storage）**，拿到文件后再缓存；之后同一地区的用户就可能直接命中。这里的“命中（cache hit）”是从边缘直接返回，“回源（origin fetch）”才是回到存储取文件。缓存多久由 **TTL（Time To Live，有效期）** 决定：太长会看到旧图，太短会频繁回源。
+
+### 修复：给浏览器正确的图片和缓存指令
+
+```html
+<img
+  src="/photos/1024/cover.webp"
+  srcset="/photos/480/cover.webp 480w, /photos/1024/cover.webp 1024w, /photos/1920/cover.webp 1920w"
+  sizes="(max-width: 640px) 100vw, 720px"
+  width="1024"
+  height="683"
+  loading="lazy"
+  alt="傍晚的湖面"
+/>
+```
+
+```http
+Cache-Control: public, max-age=31536000, immutable
+```
+
+文件名带内容哈希或版本号（例如 `cover.8f3a.webp`）后，可以让浏览器和 CDN 长期缓存；文件名变了，缓存自然失效。不要给带用户信息的 HTML 设置公共长缓存。
+
+`width` 和 `height` 还能让浏览器提前预留空间，避免图片加载后把文字顶开，造成 **CLS（Cumulative Layout Shift，累积布局偏移）**。
+
+## 3. 文章和评论：数据不能只活在浏览器里
+
+### 现场还原
+
+Lenslog 能看照片了。你想加文章页和评论框，让朋友在照片下面留言。为了快速上线，评论先存在页面里的一个数组：
+
+```js
+let comments = [];
+
+app.post('/api/comments', (req, res) => {
+  comments.push(req.body);
+  res.json({ ok: true });
+});
+```
+
+### 事故爆发
+
+朋友 A 留了一句“这张湖面好看”，刷新后评论消失了；朋友 B 在另一台电脑上根本看不到。服务器重启后，`GET /api/comments?photoId=1024` 直接返回 `[]`。
+
+控制台没有漂亮的报错，只有一行事实：**数组只活在当前进程的内存里**。进程一重启，数据就归零；请求落到另一台机器，也看不到这台机器内存里的评论。
+
+### 机制：浏览器、应用、数据库各管什么
+
+数据必须放到一个所有请求都能访问的地方。链路从两层变成一个后端加一个数据库：
+
+<FlowDiagram
+  title="一次评论请求"
+  caption="浏览器只负责发请求；应用服务做校验和路由；PostgreSQL 负责让数据活过进程重启。"
+  steps={[
+    { title: '浏览器', detail: 'POST /api/comments，用 JSON 带 photoId 和评论内容。' },
+    { title: '应用服务', detail: '校验登录、参数和长度，组装参数化 SQL，不直接拼字符串。' },
+    { title: 'PostgreSQL', detail: '写入 comments 表，外键检查 photo_id 和 user_id 是否存在。' },
+    { title: '返回', detail: '返回 201/200，浏览器把新评论插进当前列表。' },
+  ]}
+  note="这条链路还没有负载均衡、缓存和队列；它们是访问量上来后才出现的下一层问题。"
+/>
+
+这里的重点是：浏览器只负责展示和发请求；应用服务负责校验、路由和业务逻辑；数据库负责把数据活过进程重启。后端的第一个职责不是“写接口”，而是**决定数据存在哪里、谁能改它**。
+
+### 修复：把评论写进 PostgreSQL
+
+先建表。关系库可以用 PostgreSQL、MySQL 或 SQLite；Lenslog 选 PostgreSQL，是因为事务、索引和托管选择都成熟。`photo_id` 和 `user_id` 是外键，`created_at` 让评论区能按时间排序：
+
+```sql
+CREATE TABLE comments (
+  id BIGSERIAL PRIMARY KEY,
+  photo_id BIGINT NOT NULL REFERENCES photos(id),
+  user_id BIGINT NOT NULL REFERENCES users(id),
+  body TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+```
+
+再把内存数组换成查询。接口通常先从 **REST（Representational State Transfer）** 风格开始：URL 代表资源，HTTP 方法代表动作。
+
+示例用 **Node.js（JavaScript 服务端运行时）** + **Express（极简后端框架）**。如果团队用 Python，可以换成 FastAPI/Django；Java 用 Spring Boot，C# 用 ASP.NET Core，Go 用 Gin，PHP 用 Laravel，Ruby 用 Rails，Rust 用 Axum。Deno/Bun 是另外的 JavaScript 运行时。语言不是重点，能处理 HTTP、JSON、SQL 和错误就行。
+
+用户输入用参数化查询，不要拼 **SQL（Structured Query Language，结构化查询语言）**：
+
+```js
+app.get('/api/photos/:id/comments', async (req, res) => {
+  const result = await pool.query(
+    'SELECT id, body, created_at FROM comments WHERE photo_id = $1 ORDER BY created_at DESC LIMIT 50',
+    [req.params.id]
+  );
+  res.json(result.rows);
+});
+```
+
+文章页还要能被搜索引擎和朋友分享，也就是做 **SEO（Search Engine Optimization，搜索引擎优化）**。这里先记住三个选项，不需要背名字：
+
+- 页面内容不常变（文章、照片详情）→ **SSG（Static Site Generation，构建时生成）**，把 HTML 放到 CDN；
+- 页面每次请求都要变（个人首页、登录后的收藏）→ **SSR（Server-Side Rendering，服务端渲染）**，请求时由服务器生成 HTML；
+- 只有登录后的管理后台 → **CSR（Client-Side Rendering，客户端渲染）**，浏览器下载 JS 后自己渲染也可以。
+
+不要把“SSR、SSG、CSR、SPA”当成四个阵营。先问：**HTML 在什么时候生成？页面之后由谁接管导航？** 这两个问题能拆开回答。
+
+当客户端从浏览器扩展到 iOS、Android，且不同端需要的字段不同，**GraphQL** 可以让客户端按字段取数；内部服务追求强契约和流式传输时，用 **gRPC**；TypeScript 全栈放在同一仓库、想端到端类型安全时，用 **tRPC**。Lenslog 现在一个 REST API 就够，等客户端和服务边界变复杂再选。
+
+<Callout type="pitfall" title="“用了数据库就不会丢数据”">
+数据库只保证写进去的数据在进程重启后还在。如果代码把评论只放在内存里，或者写库时没检查返回值，数据仍然会丢。写完要读一次、重启一次、换一台机器再读一次。
+</Callout>
+
+**这一步的技术栈：** 一个后端进程 + 一个关系型数据库 + **SQL** / **ORM（Object-Relational Mapping，对象关系映射）**。Node 里常见的 ORM 有 Prisma/Drizzle/TypeORM，Python/Java 有 SQLAlchemy/Hibernate；Lenslog 现在只有一张评论表，不需要额外服务，也不需要缓存。
+
+## 4. 登录与收藏：从“你是谁”到“你能删谁”
+
+### 现场还原
+
+文章和照片都正常了。朋友要求加“收藏照片”。你写了一个 **API（Application Programming Interface，应用程序接口）**，用 **JSON（JavaScript Object Notation）** 传参数：
+
+```http
+POST /api/favorite
+Content-Type: application/json
+
+{ "photoId": 1024 }
+```
+
+### 事故爆发
+
+收藏按钮看起来能点，但系统立刻出现两种事故：
+
+- 数据库报错 `NOT NULL constraint failed: favorites.user_id`：请求里根本没有“当前用户”这个信息。
+- 如果你为了先跑通，让前端把 `userId` 一起传上来，任何人在 DevTools 里把 `42` 改成 `43`，就能替别人收藏或取消收藏。
+
+HTTP 是无状态的：每个请求都是陌生人。服务器不能相信请求体里自称的身份。
+
+### 机制：Cookie + Session 怎么认出你
+
+最直接的办法，是登录成功后由服务器记住“这张手环对应谁”。浏览器只保存一个随机 ID，真正的身份留在服务端。这段服务端状态叫 **Session（会话）**，浏览器保存的随机 ID 放在 **Cookie** 里。
+
+<SessionSequence />
+
+浏览器之后每次请求都会自动带上这个 Cookie。服务器拿 `session_id` 去 Session 存储里查，得到 `uid = 42`，这才知道收藏应该记给谁。
+
+两个属性决定系统会不会被偷家：
+
+- **`HttpOnly`**：评论区如果被注入 **XSS（Cross-Site Scripting，跨站脚本）**，`document.cookie` 能读走没有 `HttpOnly` 的 Cookie。加上它，JS 读不到；但 XSS 仍然能以用户身份发请求，所以还要做输出转义和 **CSP（Content Security Policy，内容安全策略）**。
+- **`SameSite`**：钓鱼网站可以诱导已登录的浏览器向 Lenslog 发请求，浏览器默认会带上 Cookie，这就是 **CSRF（Cross-Site Request Forgery，跨站请求伪造）**。`SameSite=Lax` 限制跨站携带；写操作再配合 CSRF token 更稳。
+
+### 事故升级：两台机器认不出同一个 Session
+
+为了扛访问量，你把 Lenslog 部署到 A、B 两台机器，前面加了负载均衡。
+
+用户在 A 机登录成功，刷新页面后请求被分到 B 机；B 机的内存里没有这个 `session_id`，接口返回 `401 Unauthorized`，日志里是 `session xyz123 not found`，用户被踢回登录页。
+
+两条路：
+
+**把 Session 移到 Redis（内存键值存储）。** A、B 都去同一个 Redis 查，问题解决；代价是多一套基础设施要维护。
+
+```js
+app.use(session({
+  store: new RedisStore({ client: redis }),
+  secret: process.env.SESSION_SECRET,
+  cookie: { httpOnly: true, sameSite: 'lax', secure: true }
+}));
+```
+
+**改用 JWT（JSON Web Token）。** 服务器不再存 Session，而是把 `uid=42` 和过期时间签个名，交给浏览器；之后服务端只验证签名，不查会话表。
+
+```text
+Header.Payload.Signature
+
+Payload:   {"sub":"42","exp":1700000000}        // Base64 可读，不是加密
+Signature: HMAC-SHA256(header + "." + payload)   // 防篡改，不能伪造
+```
+
+JWT 的代价是撤销困难：用户手机丢了，或者改了密码，旧令牌在自然过期前仍然有效。常见做法是缩短过期时间、配合刷新令牌，必要时再维护撤销名单。**没有完美方案，只有状态存在哪里、失效成本由谁承担。**
+
+### 认证之后，授权还会再翻一次车
+
+就算服务器知道“你是 42 号用户”，也不代表你能删别人的照片。假设删照片接口只检查了登录：
+
+```js
+app.delete('/api/photos/:id', requireLogin, async (req, res) => {
+  await db.deletePhoto(Number(req.params.id)); // 危险：没有检查 owner
+  res.status(204).end();
+});
+```
+
+用户 A 只要知道用户 B 的照片 ID，就能调用这个接口。修复方式是把资源归属写进 SQL/ORM 条件：
+
+```js
+const deleted = await db.deletePhoto(Number(req.params.id), req.user.id);
+if (!deleted) return res.status(404).json({ error: 'not found' });
+res.status(204).end();
+```
+
+对应 SQL 就是 `DELETE FROM photos WHERE id = ? AND owner_id = ?`。影响行数为 0 时返回 404，避免向攻击者泄露“这张照片存在但不属于你”。角色变多后可以引入 **RBAC（Role-Based Access Control，基于角色的访问控制）**，更细粒度再考虑 ABAC；Lenslog 现在用资源归属就够。
+
+### 那 OAuth 和 OIDC 呢
+
+当 Lenslog 支持“用 Google 登录”，或者要卖给需要企业 SSO 的客户时，再引入 **OAuth 2.0（Open Authorization 2.0）**：它解决的是“用户把有限权限委托给第三方应用”，不是登录协议本身。**OIDC（OpenID Connect）** 在 OAuth 2.0 上增加身份层，返回 ID Token，才更接近“用某个平台登录”。Lenslog 现在只服务自己的账号体系，先用 Cookie/Session 就够。
+
+**这一节的结论：** 认证解决“你是谁”，授权解决“你能做什么”；先用 Cookie/Session，多机后把 Session 放进 Redis，需要无状态或跨服务时再考虑 JWT，第三方登录再引入 OAuth/OIDC。
+
+## 5. 团队加入：从复制粘贴到组件和构建
+
+### 现场还原
+
+Lenslog 有了两个开发者。一个改照片卡片，一个加评论区；两个人都在 `app.js` 底部继续追加代码，样式都写在 `style.css` 的最后一行。
+
+### 事故爆发
+
+合并代码后，页面出现了一堆奇怪的问题：
+
+```text
+Uncaught TypeError: Cannot read properties of null (reading 'addEventListener')
+```
+
+原因是 A 把照片列表的 DOM 结构改了，B 的旧选择器找不到元素。更糟的是，同一个“收藏”按钮被绑定了三次点击事件，点一次会发出三个请求；评论区的样式覆盖了照片标题的样式。每次发布还要手动把 `app.js` 复制到服务器。
+
+### 机制：把界面拆成可组合的单元
+
+前端框架解决的不是“让 JavaScript 更高级”，而是把界面拆成有输入、有输出的组件，让状态变化和 DOM 更新由框架统一处理：
+
+```jsx
+function PhotoCard({ photo, onFavorite }) {
+  return (
+    <article className="photo-card">
+      <img src={photo.thumbnail} alt={photo.title} width="640" height="427" />
+      <h2>{photo.title}</h2>
+      <button onClick={() => onFavorite(photo.id)}>收藏</button>
+    </article>
+  );
+}
+```
+
+你不用再手动 `querySelector` 和 `innerHTML`；组件接收 `photo`，点击时调用 `onFavorite`。页面由状态驱动，重复绑定和选择器失效的问题会少很多。
+
+同时，浏览器不能直接运行 JSX、TypeScript 和一堆模块；需要一个构建工具把它们变成浏览器能执行的 JavaScript、CSS 和静态资源：
+
+<FlowDiagram
+  title="一次前端构建"
+  caption="开发时浏览器看得到热更新；上线时只带走必要的产物。"
+  steps={[
+    { title: '源码', detail: '组件、样式、图片、路由和类型；按功能拆成文件。' },
+    { title: '构建', detail: 'Vite/Webpack 转译、打包、压缩、代码分割，生成 dist 目录。' },
+    { title: '产物', detail: 'HTML、CSS、JS、带哈希的静态资源；交给静态托管或 CDN。' },
+    { title: '浏览器', detail: '下载入口文件，按需加载路由和交互组件。' },
+  ]}
+  note="构建工具和包管理器不是运行时；它们在你的开发机或 CI 上工作，不会替浏览器执行代码。"
+/>
+
+Lenslog 的页面已经拆成组件，但团队马上会问：选 React、Vue 还是 Svelte？先别急着比较语法。三者的差别在于“数据变化后，谁来更新 DOM”。
+
+**React** 把组件重新执行一遍，用虚拟 DOM 比较差异；好处是生态大、招聘容易，代价是组件状态和渲染边界要自己设计。**Vue** 用模板和响应式依赖追踪，很多更新由框架自动收集；适合希望渐进引入、页面以模板为主的团队。**Svelte** 在构建时把组件编译成直接操作 DOM 的代码，运行时更轻；代价是生态和调试方式与 React/Vue 不同。
+
+**Angular** 走另一条路：依赖注入、路由、表单、HTTP 都内置，适合大团队和长期项目，但学习成本更高。**Solid** 用细粒度信号，**Qwik** 用可恢复性优化首屏交互；它们不是“新版本”，而是针对不同性能约束的取舍。Lenslog 只有两个开发者，选团队最熟悉、能快速找到帮助的那一个，比追新更重要。
+
+当页面多起来，路由、数据获取、SSR/SSG 和构建都要自己拼，就会出现**元框架（meta-framework）**。React 这边是 **Next.js**，Vue 是 **Nuxt**，Svelte 是 **SvelteKit**；它们把文件路由、服务端渲染、API 和构建打包在一起。Lenslog 现在用 Vite + React 足够；等“文章要被搜到、首屏要快”变成核心需求，再考虑元框架，而不是一开始就上最重的组合。
+
+状态的问题也会在第三个页面出现。照片列表明明是服务端最新的，收藏按钮却显示旧数字；筛选条件写进组件状态后，刷新页面就丢了。先把数据分清楚：照片列表是服务端状态，筛选条件应该进 URL，弹窗开关才是组件本地状态。服务端数据用 **TanStack Query** 或 **SWR** 做缓存和失效；只有跨页面共享的客户端状态，才需要 **Redux**、**Zustand** 或 **Pinia**。把所有东西塞进一个全局 store，最后会得到一张互相覆盖的状态网。
+
+样式冲突则更直接：评论区的 `.photo-card` 覆盖了照片页的同名类。**CSS Modules** 把类名局部化，**Sass** 提供变量和嵌套，**Tailwind CSS** 用工具类统一间距和颜色；它们都能用，但团队要先定一种命名和审查规则。选四种方案混用，比类名冲突更难查。
+
+类型问题通常在上线前才暴露：A 把 `photo.id` 从 number 改成 string，收藏接口在运行时才报错。**TypeScript（TS）** 能在构建阶段发现这类不一致，但类型会被擦除，API 边界仍需要用 **Zod** 或 JSON Schema 做运行时校验。别把“有类型”当成“运行时一定安全”。
+
+测试也一样，不能只靠手点。收藏、评论、权限是三条核心路径：用 **Vitest**/**Jest** 写函数和状态转换的单元测试，用 **Testing Library** 测组件行为，用 **Playwright**/**Cypress** 跑一条从登录到收藏的端到端流程。测试不在多，而在覆盖真正会坏的路径。
+
+构建工具负责把源码变成浏览器能运行的东西：转译（transpile）处理 JSX/TS 和新语法，打包（bundle）生成依赖图，tree-shaking 去掉未使用代码，代码分割按路由拆包，HMR 让开发时局部更新。**Vite** 开发时用原生 ESM，**Webpack** 的 loader/plugin 生态更成熟，**Rollup** 更适合库，**esbuild** 以速度见长；它们不是同一层的“替代品”，很多工具会组合使用。
+
+包管理解决的是另一个问题：A 的机器装到 lodash 4.17.20，B 的机器装到 4.17.21，线上行为不同。用 pnpm/npm 的锁文件锁定依赖树，提交到仓库；多个包/应用时再用 **pnpm workspace** 管理，**Turborepo**/**Nx** 负责任务缓存。monorepo 不是微服务，它只是把多个包放在一个仓库里。
+
+再往后才会遇到的选择，也和“运行时”有关。多个团队要独立发布前端，才考虑**微前端（micro-frontend）**；要桌面或移动端，才考虑 **Electron**、**Tauri**、**React Native**、**Flutter** 或小程序。它们改变运行时和发布渠道，不是 Lenslog 当前的瓶颈。
+
+浏览器标准里还有一组能力：跨框架组件用 **Web Components（自定义元素 + Shadow DOM）**；离线/可安装用 **PWA（Progressive Web App）** + Service Worker；需要在浏览器跑 C/C++/Rust 算法才用 **WebAssembly（Wasm）**。它们不是互相替代，而是解决不同场景。
+
+### 修复：选一套，先把团队协作跑顺
+
+Lenslog 的页面已经复杂到需要组件和构建，但还没复杂到需要多个框架。选一个团队能维护的组合：
+
+- 一个 UI 框架（React、Vue、Svelte 任选其一）；
+- 一个构建工具（如 Vite）；
+- 一个包管理器（如 pnpm），锁文件提交到仓库；
+- 一个状态边界：组件自己的状态、URL 状态、服务端数据分开管。
+
+```bash
+pnpm create vite lenslog-web --template react
+cd lenslog-web
+pnpm install
+pnpm build
+```
+
+构建会在 `dist/` 生成可部署文件。从此发布不再手工复制 `app.js`，而是发布一个可重复构建的产物。
+
+<Callout type="pitfall" title="“用了框架就不用懂 HTML/CSS/JS 了”">
+组件最终还是会变成 DOM、CSS 和事件循环。框架只帮你组织更新；布局错、焦点丢、按钮点不到，仍然要回到浏览器开发者工具。
+</Callout>
+
+## 6. 访问量上来：慢查询、缓存和发不出去的邮件
+
+### 现场还原
+
+Lenslog 被分享到了一个摄影社区，日访问从几百涨到几万。首页和照片详情开始变慢，朋友评论后等很久才看到；注册成功邮件有时根本没发出去。
+
+### 事故爆发
+
+你在日志里看到三类问题：
+
+```text
+GET /api/photos?page=1              2.3s
+GET /api/photos/1024/comments       1.8s
+POST /api/register                  504 Gateway Timeout
+```
+
+第三条不是数据库慢，而是注册接口里同步调用了邮件服务：邮件服务超时，整个注册请求就超时，用户看到 504。
+
+### 机制：慢在 SQL、慢在重复计算，还是慢在同步等待？
+
+先看数据库。评论查询没有索引，数据库只能逐行扫描：
+
+```sql
+EXPLAIN ANALYZE
+SELECT * FROM comments WHERE photo_id = 1024 ORDER BY created_at DESC;
+-- Seq Scan on comments  (actual time=... rows=...)
+```
+
+加一个复合索引，查询就能直接定位到这张照片的评论：
+
+```sql
+CREATE INDEX comments_photo_created_idx
+ON comments (photo_id, created_at DESC);
+```
+
+这时评论列表又暴露另一个问题。列表先查 50 条评论，渲染时再为每条评论查一次用户资料。SQL 日志里出现 1 条列表查询加 50 条用户查询，这就是 **N+1 查询**。
+
+修复不是把数据库换掉，而是把“逐条查”改成 JOIN 或一次批量 IN 查询。另一个信号是连接池被占满：请求排队、接口开始 502/超时。**连接池（connection pool）** 是复用数据库连接的地方，不是越大越好；连接数要和数据库容量匹配。
+
+再看热点数据。每张照片详情都查一次作者和收藏数，访问量上来后数据库重复做同样的事。可以加一层缓存：
+
+<FlowDiagram
+  title="一次带缓存的读取"
+  caption="缓存命中时直接返回；未命中才查数据库，并把结果放回缓存。"
+  steps={[
+    { title: '应用收到请求', detail: '照片详情页需要作者、标题和收藏数。' },
+    { title: '先查缓存', detail: 'Redis 里用 photo:1024 作为 key；命中就直接返回。' },
+    { title: '缓存未命中', detail: '查 PostgreSQL，组装结果，再写回 Redis，设置合理 TTL。' },
+    { title: '返回并失效', detail: '照片更新或收藏数变化时，删除对应缓存；不要只改数据库。' },
+  ]}
+  note="缓存不是数据库的替代品；它只是把重复读取放到更快的地方。带用户身份的页面不要放进公共缓存。"
+/>
+
+```js
+const key = `photo:${id}`;
+const cached = await redis.get(key);
+if (cached) return JSON.parse(cached);
+
+const photo = await db.getPhoto(id);
+await redis.set(key, JSON.stringify(photo), { EX: 300 });
+return photo;
+```
+
+缓存还有一个坑。热点照片的缓存恰好在同一秒过期，1000 个请求同时回源，数据库瞬间被打满，这就是缓存击穿。常用做法是给 TTL 加随机抖动，让过期时间错开；对同一个 key 用互斥锁或单飞（singleflight）只放一个请求回源；对不存在的 key 也缓存一个短空值。
+
+最后看同步等待。注册接口里不应该等待邮件发送完成：
+
+```js
+// 不好：邮件超时会拖垮整个注册请求
+await sendWelcomeEmail(user.email);
+
+// 更好：先把任务放进队列，立即返回 202
+await emailQueue.add('welcome', { userId: user.id });
+return res.status(202).json({ ok: true });
+```
+
+队列把“必须现在完成”和“可以稍后完成”分开。注册请求先把邮件任务放进队列，立即返回 202；后台 worker 再慢慢发。邮件、图片转码、导出报表都适合这样处理；收藏这种需要立刻反馈的写入，仍然应该同步完成。
+
+队列工具有不同定位：Node 里常用 **BullMQ**，Python 里常用 **Celery**，跨服务的事件流才会用到 **RabbitMQ** 或 **Kafka**。Lenslog 先用最简单的任务队列，不必为了“架构感”上 Kafka。
+
+流量继续涨，你启动两台应用服务器，前面放 **Nginx**。Nginx 在这里做**反向代理（reverse proxy）**：客户端只看见一个入口，它把请求转给后面的机器。再把请求分给多台机器，这就是**负载均衡（load balancer）**。健康检查失败的实例会被摘掉；代价是 Session、上传文件和缓存需要共享。
+
+<RequestJourney client:visible />
+
+图里会出现 WAF；它是 **Web 应用防火墙**，负责过滤恶意流量，安全一节会展开。Lenslog 现在不一定部署它，先把它当作可选的入口层。
+
+图里的 API 网关和 **BFF（Backend for Frontend，面向前端的后端聚合层）** 也是多个服务、多个前端时才需要的层。API 网关集中做鉴权、限流和路由；BFF 为特定前端聚合数据。Lenslog 现在一个应用进程就能承担路由和鉴权，不需要为了图完整把它们全加上。
+
+页面卡住时，光看 console 不够，你还需要**可观测性（observability）**。日志（logs）记录具体事件，指标（metrics）看趋势，追踪（traces）把一次请求在多个服务里的路径串起来。给请求加一个 ID，出错时就能从浏览器一路查到数据库。
+
+指标要看长尾：p95 表示 95% 的请求不超过这个值，p99 更接近最慢用户的感受。**OpenTelemetry** 负责采集，**Sentry** 看异常；先把数据采到，再谈优化。
+
+瀑布图里的指标各看一件事。**TTFB（Time To First Byte，首字节时间）** 和 **LCP** 更关心加载；**INP（Interaction to Next Paint，交互到下一次绘制）** 衡量交互响应，**CLS（Cumulative Layout Shift，布局偏移）** 衡量页面有没有突然跳动。先找耗时最大的一段，再决定优化图片、服务端还是前端脚本。
+
+<PerformanceWaterfall client:visible />
+
+如果搜索变成核心功能，数据库的 LIKE 不够用，才引入 **Elasticsearch** 或 **OpenSearch** 做全文检索。
+
+如果报表查询拖慢主库，把数据同步到**数据仓库/OLAP**（Snowflake、BigQuery、ClickHouse），用 **ETL/ELT** 管道定期搬运。只有单库写入真的到极限，才考虑分片或 NoSQL（MongoDB、DynamoDB 等）。Lenslog 现在还没有这些需求。
+
+先测量，再决定加缓存还是队列；不要凭感觉把所有东西都异步化。
+
+## 7. 上线：DNS、证书、502 和回滚
+
+### 现场还原
+
+Lenslog 已经有一个应用服务器、一个数据库和一套前端构建产物。你准备把新版本上线，结果朋友发来消息：“网站打不开了。”
+
+### 事故爆发
+
+浏览器显示 `ERR_CERT_DATE_INVALID`；另一个地区显示 `502 Bad Gateway`。你登录服务器发现应用进程其实还在，但反向代理转发到了一个已经停掉的上游端口。数据库迁移也忘了执行，应用启动日志里是 `relation "favorites" does not exist`。
+
+### 机制：一次发布要经过哪些门
+
+下面的流水线里会出现容器镜像、函数包等词；它们对应不同的部署形态，先看阶段顺序和卡点，后面会解释。
+
+<DeployPipeline client:visible />
+
+Lenslog 一开始用静态托管；有后端之后，可以租一台 VPS，或者用 **PaaS（Platform as a Service，平台即服务）** 让别人管理运行时和网络。这个阶段最重要的是“能稳定跑”，不是“架构完整”。
+
+当开发机、预发和生产的环境开始不一致，**Docker（容器镜像）** 把应用和依赖打成一个镜像，减少“我这里能跑”的问题。服务多、团队多、需要自动调度和弹性时，才轮到 **Kubernetes（K8s，容器编排）**。事件驱动的任务用 **Serverless（无服务器函数，FaaS）**，离用户更近的入口用 **Edge（边缘函数）**。Lenslog 现在不需要 K8s；先把一台机器和一条发布流程管好。
+
+上线不是“把代码传上去”，而是：构建产物 → 服务器/平台 → 反向代理或负载均衡 → 健康检查 → 数据库迁移 → 流量切换。把这一串自动跑起来，就是 **CI/CD（Continuous Integration / Continuous Delivery，持续集成/持续交付）**。任何一环没准备好，用户看到的就是证书错误、502 或 500。
+
+发布也有不同策略。滚动更新是一台一台换；**蓝绿（blue-green）** 准备两套环境切换；**金丝雀（canary）** 先让少量流量试新版本。**功能开关（feature flag）** 则把“代码上线”和“用户看到”拆开。Lenslog 先用滚动和健康检查，等多实例后再灰度。
+
+### 修复：把发布做成可重复、可回滚的流程
+
+一个最小可用的流程，可以用 **GitHub Actions**（或 GitLab CI）跑：
+
+```yaml
+# .github/workflows/deploy.yml（示意）
+on: push
+jobs:
+  deploy:
+    steps:
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm build
+      - run: pnpm db:migrate
+      - run: ./deploy.sh
+```
+
+发布前后各做一次检查：
+
+- 发布前：锁文件一致、测试通过、数据库迁移可回滚、环境变量齐全；
+- 发布后：健康检查通过、错误率和延迟没有异常、关键页面能打开；
+- 出问题：先回滚到上一个版本，再定位原因；不要在生产环境边猜边改。
+
+证书和 DNS 也要纳入检查：证书由 CA 签发，Let's Encrypt 通过 **ACME** 自动续期；用 `dig` 确认域名解析，用 `curl -I https://lenslog.com` 看状态码和证书，给证书续期设置告警。
+
+<Callout type="pitfall" title="“代码能跑，为什么上线就 502？”">
+502 表示反向代理收到了无效的上游响应。先看应用进程、端口、健康检查和代理配置，不要先改业务代码。504 则更像上游超时，常见原因是慢查询、同步外部调用或连接池耗尽。
+</Callout>
+
+## 8. 安全：攻击者不会按你的架构图走
+
+### 现场还原
+
+Lenslog 的评论和收藏都能用了。你让朋友随便测试：有人粘贴了一段 HTML，有人发了一张“点我领奖”的图片，有人把照片 ID 改成了 `1024 OR 1=1`。
+
+### 事故爆发
+
+三种事故同时出现：
+
+- 有人在评论里写 `<img src=x onerror="fetch('/api/favorite',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photoId:1})})">`。页面把它当 HTML 执行，脚本以你的登录身份发了请求。
+- 你收到一封“密码重置”邮件，但链接里的 `token` 是从数据库明文读出来的。
+- 搜索框输入 `1024 OR 1=1`，后端把用户输入直接拼进 SQL，返回了全部照片。
+
+还没完。前端部署在 `app.lenslog.com`，API 在 `api.lenslog.com`，浏览器控制台报：
+
+```text
+Access to fetch at 'https://api.lenslog.com/photos'
+from origin 'https://app.lenslog.com' has been blocked by CORS policy
+```
+
+前端在 `app.lenslog.com`，API 在 `api.lenslog.com`，浏览器会把它当成两个源。默认情况下，脚本不能读取另一个源的响应；服务器要用 `Access-Control-Allow-Origin` 明确放行。这个机制叫 **CORS（Cross-Origin Resource Sharing，跨源资源共享）**。CORS 不是登录校验；它只是浏览器放宽同源策略的规则，服务端仍然要对每个请求做鉴权。
+
+登录接口还被脚本每秒尝试 1000 次。这时需要**限流（rate limiting）**：超过阈值返回 `429 Too Many Requests`，并用 `Retry-After` 告诉客户端什么时候再试。限流保护的是服务本身，不是用户的权限。
+
+依赖也是攻击面。某个 npm 包的维护者账号被接管，`postinstall` 脚本就可能在构建机上执行。锁文件、依赖审计、**SBOM（Software Bill of Materials，软件物料清单）** 和最小权限，都是为了让“安装依赖”这件事可控。
+
+### 机制：每个输入边界都可能是入口
+
+XSS 的路径很直接：
+
+<FlowDiagram
+  title="一条评论如何变成攻击"
+  caption="输入没有转义，浏览器把评论当成代码执行。"
+  steps={[
+    { title: '用户输入', detail: '评论里包含 script 或带 onerror 的图片标签。' },
+    { title: '服务端存储', detail: '原样存进数据库；这里不是“信任边界”的终点。' },
+    { title: '页面渲染', detail: '用 innerHTML 或未转义模板把内容插进 DOM。' },
+    { title: '脚本执行', detail: '脚本读取 Cookie 或调用接口，以受害者身份操作。' },
+  ]}
+  note="存储时保留原文可以，但输出到 HTML 时必须按上下文转义；富文本要用可信的清洗库，不能只靠黑名单。"
+/>
+
+CSRF 走的是另一条路：攻击者不需要读你的 Cookie，只需要让受害者浏览器“自动带上” Cookie 发请求。SQL 注入则是把用户输入当成 SQL 语法执行。
+
+### 修复：把“信任”从默认改成显式
+
+```js
+// 输出到 HTML：让框架转义，不要自己拼 innerHTML
+return <p>{comment.body}</p>;
+
+// 必须渲染富文本时：用可信的 sanitizer
+const clean = DOMPurify.sanitize(comment.body);
+
+// SQL：参数化查询，不拼接
+await pool.query(
+  'SELECT * FROM photos WHERE id = $1 AND owner_id = $2',
+  [photoId, req.user.id]
+);
+
+// 密码：只存带盐的慢哈希
+const passwordHash = await argon2.hash(password);
+```
+
+再补三道边界：
+
+- Cookie 加 `HttpOnly`、`Secure`、`SameSite`；写操作加 CSRF token。
+- 设置 CSP，限制脚本来源；不要把用户输入直接塞进 `innerHTML`。
+- 密钥只放服务端环境变量或密钥管理服务，绝不进前端 bundle 和 Git。
+- 如果前面有 **WAF（Web Application Firewall，Web 应用防火墙）**，它可以过滤常见攻击，但不能替代应用层鉴权、参数化查询和输入校验。
+
+<Callout type="pitfall" title="“Base64 看起来像乱码，应该算加密吧？”">
+Base64 只是编码，任何人拿到都能还原。JWT 默认是签名，不是加密；载荷可以被解码。密码要用 Argon2、bcrypt 等慢哈希加盐存储。编码、加密、哈希解决的是三个不同问题。
+</Callout>
+
+## 9. 收费与多租户：别让客户看到别人的照片
+
+### 现场还原
+
+Lenslog 推出了 Pro 版：摄影师可以创建自己的空间，上传照片、设置价格、邀请客户。你给每个客户发了一个独立链接，开始按月收费。
+
+### 事故爆发
+
+客户 A 登录后打开 `/api/photos`，看到了客户 B 的私密照片。你检查代码，发现查询只写了：
+
+```sql
+SELECT * FROM photos ORDER BY created_at DESC;
+```
+
+因为之前只有你一个人用，这条 SQL 没有问题；现在有多个租户，它变成了数据泄露。
+
+### 机制：租户隔离必须进入每一条查询
+
+多租户不是“加一个注册页”，而是让每条业务查询都带上“当前租户是谁”。用户登录后，Session/JWT 里除了 `uid`，还要有 `tenant_id`；数据表要有 `tenant_id`；查询、更新、删除都要带这个条件。
+
+```sql
+ALTER TABLE photos ADD COLUMN tenant_id BIGINT NOT NULL;
+CREATE INDEX photos_tenant_created_idx ON photos (tenant_id, created_at DESC);
+```
+
+```js
+const photos = await pool.query(
+  'SELECT id, title, url FROM photos WHERE tenant_id = $1 ORDER BY created_at DESC',
+  [req.user.tenantId]
+);
+```
+
+共享库表是最省成本的起点；隔离要求更高的客户，可以升级到独立 schema 或独立数据库。PostgreSQL 的 **RLS（Row-Level Security，行级安全）** 可以作为兜底，但不能替代应用层的对象级授权。
+
+无论哪种方式，都要用两个测试租户互相访问一次，确认拿不到对方的数据。租户隔离不是“登录后自动就有了”，它是每条查询、每个文件、每个后台任务都要遵守的约束。
+
+支付先接 Stripe/Paddle 这类支付服务商：Checkout 收钱、**Webhook（回调）** 开通权益、后台看订阅状态。Webhook 必须验签、幂等，不能只信请求体；否则别人伪造一条“支付成功”就能白嫖。
+
+不要把银行卡信息存进自己的数据库，尽量把 **PCI DSS（支付卡行业数据安全标准）** 范围交给支付服务商。客户要求导出或删除数据时，你要能给出明确流程，而不是临时写 SQL。
+
+一次改版也可能把所有租户同时弄崩。用**功能开关（feature flag）** 按租户或比例开启，再逐步放量；这样代码先上线，用户不会立刻全部看到。
+
+要比较两个方案时做 **A/B 测试**，提前定义转化率和错误率等护栏指标。实验不是“把按钮换个颜色看看”，它需要假设、样本量和停止条件。
+
+企业客户会问 **SOC 2 / ISO 27001**；欧盟用户涉及 **GDPR**，加州 **CCPA**；支付卡涉及 PCI DSS；还有数据驻留、DPA 和删除/导出。合规是流程 + 技术控制 + 证据，不是一张证书。
+
+朋友评论后要实时通知。每 3 秒轮询一次会浪费请求；**SSE（Server-Sent Events，服务端事件流）** 适合服务器单向推送，**WebSocket** 适合聊天、协作这类双向通信。
+
+音视频通话才需要 **WebRTC**。Lenslog 先用 SSE 做通知：
+
+```js
+const source = new EventSource('/api/notifications');
+source.onmessage = (event) => addNotification(JSON.parse(event.data));
+```
+
+朋友登录后只保持一条事件流，服务器有新评论就推一条；不需要双向发送时，不要为了“实时”两个字上 WebSocket。
+
+<Callout type="warning" title="先跑通单租户，再加隔离">
+不要在第一个客户还没有付费时，就设计跨区域、多集群、复杂合规。Lenslog 现在只需要：`tenant_id` 进入每条查询、支付服务商处理银行卡、基础的数据导出与删除。等真的有企业客户，再补审计和合规材料。
+</Callout>
+
+## 10. AI 摘要：模型不知道你的照片
+
+### 现场还原
+
+Lenslog 想加一个功能：点一下“AI 摘要”，自动写一段照片故事，比如“傍晚的湖边，有一艘小船”。你把照片标题、地点、EXIF 时间和评论一起发给模型。
+
+### 事故爆发
+
+第一版摘要看起来很像样，但把你在大阪拍的照片写成了“京都的清晨”。你问模型为什么，它说：“根据上下文推测。”它没有读过你的照片，只是在猜。
+
+第二版更糟：你把模型 API Key 放进了前端代码，打开 DevTools 的 Network 面板就能看到；第二天账单暴涨，接口返回 `429 Too Many Requests`。
+
+### 机制：AI 摘要是一条检索、调用、校验的链路
+
+模型（**LLM，Large Language Model，大语言模型**）只能看到你放进上下文的内容，也就是**上下文窗口（context window）**里的 token。token 是模型切分文本的单位，中文大约一到几个字一个；窗口有上限，不是想塞多少就塞多少。
+
+它不知道照片真实的地点，也不知道你的评论里有没有人恶作剧。所以要在服务端做三件事：
+
+1. 从数据库取出可信的元数据（EXIF、标题、地点）和相关评论；
+2. 把资料一起放进 **Prompt（提示词）**，要求模型只基于资料回答，并返回**结构化输出（structured output）**；
+3. 对输出做校验：地点是否在输入里？有没有编造相机型号？失败就返回“资料不足”。
+
+照片和评论多到上下文窗口放不下时，先不要把所有内容硬塞进去。把每段文字做 **Embedding（向量表示）**，存进**向量数据库（vector database）**，查询时先取出最相关的几条，再交给模型。这就是 **RAG（Retrieval-Augmented Generation，检索增强生成）**。
+
+照片只有几十张时，直接把元数据拼进 Prompt 就够。不要为了“看起来像 AI 架构”而 RAG；检索质量取决于切分、过滤和评估，不是换一个向量库就自动变准。
+
+当你接多家模型，想统一 key、配额、重试和降级时，用 **AI Gateway（AI 网关）**。模型要读 EXIF、查天气时，用**工具调用（tool calling）**；**MCP（Model Context Protocol）** 是把工具/数据源接给模型的协议，不是模型本身。
+
+摘要要逐字显示，用**流式输出（streaming）**，让用户先看到内容再等待结束。上线前用 20 张照片做 **eval（评估）**，比较不同模型/prompt 的结果；再用 **guardrail** 拦截提示注入（prompt injection）和敏感输出。
+
+<AIPipeline client:visible />
+
+### 修复：服务端调用、检索、评估
+
+```js
+// 只在服务端读取密钥；浏览器永远不接触模型 API Key
+app.post('/api/photos/:id/summary', requireLogin, async (req, res) => {
+  const photo = await db.getPhoto(req.params.id, req.user.tenantId);
+  const facts = [photo.title, photo.location, photo.takenAt].filter(Boolean);
+
+  const result = await ai.generate({
+    system: '只根据提供的资料写摘要；资料没有的信息不要编造。',
+    input: facts.join('\n'),
+    schema: { summary: 'string', location: 'string | null' }
+  });
+
+  res.json(result);
+});
+```
+
+同时要有配额、超时、降级和评估：
+
+- 每个租户每月多少 token；超出返回明确的 429/402；
+- 模型超时或不可用时，返回原始元数据，不要让整个页面崩掉；
+- 准备一小批“标准答案”做离线评估，换模型/prompt 后回归；
+- 记录模型版本、耗时、token 成本；不要把用户的私密评论随便发出去。
+
+<Callout type="pitfall" title="“接上模型就等于做完 AI 功能”">
+模型调用只是链路的一环。没有检索，它会猜；没有结构化输出，前端很难用；没有评估，你无法判断换模型是进步还是回归；没有配额，账单会替你做决定。
+</Callout>
+
+## 11. 产业链与岗位：你在这张图的哪里
+
+### 现场还原
+
+Lenslog 有了第一个付费客户。你开始买域名、CDN、数据库、邮件、支付、监控，也第一次意识到：自己写的代码只是整条链上的一小段。
+
+### 机制：依赖向下，付费向上
+
+<IndustryChainMap client:visible />
+
+越靠上游，越接近规则和基础设施。制定 HTML、HTTP、ECMAScript 规则的是 **W3C（万维网联盟）**、**WHATWG**、**TC39**、**IETF**；实现这些规则的是 Google、Apple、Mozilla、Microsoft 这些浏览器厂商。再往下是 AWS、Azure、Google Cloud、阿里云、腾讯云，以及 Cloudflare、Akamai、Fastly 这样的 CDN；还有 Linux Foundation、CNCF、Apache、OpenJS 这些开源基金会，它们维护运行时和基础设施项目。
+
+中游是把能力做成开发构件的团队：React、Vue、Next.js、Nuxt、Vite 这样的框架与工具，数据库公司、监控和支付服务商。下游是 Vercel、Netlify、Supabase、Stripe、Sentry 这样的平台/SaaS，以及企业研发团队、外包和独立开发者。
+
+最靠近用户的是交付层：有人把通用能力组合成产品，有人做行业集成，有人一个人维护一个小工具。依赖从上往下，付费大体从下往上；开源项目的维护者也常由下游公司资助。
+
+你不必自己造每一层。身份、支付、邮件、监控这类通用能力优先买；照片数据模型、收藏规则、租户隔离、AI 摘要的产品体验，自己建。选平台时看数据能否导出、API 是否标准、价格是否随规模突变、退出成本多高。
+
+### 岗位：分工是组织选择，不是技术边界
+
+Lenslog 只有你一个人时，你就是前端、后端、运维、产品。公司变大后，工程侧会拆出前端、后端、全栈、DevOps/SRE、安全、QA、数据等角色。前端负责界面、交互、可访问性和性能；后端负责 API、业务规则、数据库和稳定性；DevOps/SRE 负责构建、部署、可靠性和故障响应。
+
+产品和组织侧还有产品经理、设计师、技术经理/架构师，以及解决方案工程师和 **DevRel（Developer Relations，开发者关系）**。后者负责售前方案、文档、布道和社区反馈。小公司一人多角，大公司才把这些边界切细。
+
+“全栈”不是“每一层都达到专家水平”，而是能跨层交付完整功能，遇到问题时知道该看浏览器、网络、应用还是数据库。
+
+**看产业图的意义：** 当有人说“这个平台很强”“这个框架要取代那个”，你可以先问它在哪一层、靠什么赚钱、你离开它要付多少成本。
+
+## 12. 下一步：一条可执行的学习路线
+
+不要按“技术热度榜”学，按 Lenslog 的需求学。每完成一步，都交付一个能打开、能复现、能修好的小功能。
+
+1. **静态页**：HTML/CSS/JS 做一个照片墙，部署到静态托管，配置域名和 HTTPS。
+2. **第一个后端**：用 Node/Express 或 Python/FastAPI 写照片列表和评论 API，接 PostgreSQL；用 SQL 建表、查询、加索引。
+3. **第一次登录**：实现 Cookie/Session 登录、收藏和“只能删自己的照片”；再故意制造一次越权，修掉它。
+4. **前端工程**：用 React、Vue 或 Svelte + Vite + pnpm 重做照片墙；把组件、状态和服务端数据分开。
+5. **第一次扩容**：给慢查询加索引，给热点数据加 Redis 缓存，把邮件发送放进队列；用日志和指标确认问题真的解决。
+6. **第一次上线**：写一条 CI/CD 流水线，做数据库迁移、健康检查、回滚；再补上 XSS/CSRF/密码哈希。
+7. **第一次商业化**：加 `tenant_id`、支付订阅和最小合规；先服务一个客户，再谈多区域。
+8. **第一次 AI**：在服务端接模型，基于照片元数据做摘要；加检索、结构化输出、评估和配额。
+
+如果卡住了，按这个顺序排查：
+
+```text
+用户看到了什么？
+  → Network：DNS、TLS、状态码、请求体、响应体
+  → Console：JS 报错、CSP、跨域
+  → 服务端日志：路由、参数、异常栈、依赖超时
+  → 数据库：EXPLAIN、索引、锁、连接池
+  → 最后才猜框架和架构
+```
+
+## 结语
+
+Lenslog 没有“最终架构”。静态页、数据库、Session、Redis、队列、多租户、AI，都是某一刻的瓶颈逼出来的选择。明天需求变了，其中一些还会被删掉。
+
+你不需要背下所有名词。遇到一个新词，先问三件事：
+
+- 它解决的是哪一层的问题？
+- 它在开发、构建、请求还是交互时生效？
+- 它替换了什么，代价是什么，失败时用户会看到什么？
+
+能回答这三个问题，名词就不再是黑话，而是你修过的一次事故留下的工具。
+
+## 13. 一页总结：把所有词串回 Lenslog
+
+这张总结不复述定义，只把 Lenslog 每一步用到的技术放回它的来处。读到这里，你不需要背它们；遇到新词时，能问“它在哪一层、什么时候生效、谁调用谁”就够了。
+
+**第 1 步，静态页。** 浏览器先从 **DNS** 拿到域名对应的 IP，再用 **TLS** 建立加密连接，通过 **HTTP** 请求文件。**HTML** 描述结构，**CSS** 控制样式，**JavaScript** 操作 **DOM**。静态托管只负责按路径返回文件；路径大小写和 404 是这一阶段最常见的故障。
+
+**第 2 步，图片。** 原图放进对象存储，浏览器通过 **CDN** 缓存拿到缩略图；命中就直接返回，未命中才回源。**TTL** 决定缓存多久，`srcset` 和懒加载让浏览器只下载需要的尺寸。**LCP** 看首屏最大内容何时出现，**CLS** 看图片加载有没有把页面顶开。
+
+**第 3 步，数据。** 评论不能只存在内存里，要写进 PostgreSQL。**API** 用 **REST** 风格暴露资源，**JSON** 当载荷，**SQL** 做查询，**ORM** 把表和代码连起来。页面要能被搜到，就用 **SSG** 或 **SSR**；不同客户端需要不同字段时，才引入 GraphQL、gRPC 或 tRPC。
+
+数据库开始变慢后，才会认真讨论索引、事务、**N+1 查询**和连接池。这些词不是第一天就要全部用上；它们是数据量和并发上来后，帮你定位瓶颈的工具。
+
+**第 4 步，身份。** HTTP 无状态，所以用 Cookie + Session 认出用户；多台机器时把 Session 放进 Redis，或者改用 **JWT**。JWT 默认是签名不是加密；**OAuth**/**OIDC** 是第三方登录和身份委托。
+
+**XSS** 会偷 Cookie，**CSRF** 会借用 Cookie；**CSP** 和 `SameSite` 是边界。认证之后还要做对象级授权——“登录了”不等于“能删别人的照片”。
+
+**第 5 步，前端工程。** 团队变大后，React、Vue、Svelte 把界面拆成组件；路由、SSR 和构建交给 Next.js、Nuxt、SvelteKit 这类元框架。**TypeScript** 在构建时抓类型错误，Vite/Webpack 负责转译和打包，pnpm 锁文件保证依赖一致。
+
+状态要分服务端缓存和客户端状态：前者用 TanStack Query/SWR，后者才用 Redux/Zustand/Pinia。样式用 CSS Modules、Sass 或 Tailwind 之一，测试用 Vitest/Playwright。Web Components、PWA、Wasm 等，等跨框架、离线或高性能计算的需求明确再引入。
+
+**第 6 步，规模。** 慢查询先加索引，N+1 用 JOIN 或批量查询，连接池避免请求互相挤爆。热点数据进 Redis，TTL 和互斥锁防止缓存击穿；邮件、转码放进 BullMQ、Celery、RabbitMQ 或 Kafka。
+
+Nginx 做反向代理，负载均衡把请求分给多台机器；日志、指标、追踪和 p95/p99 帮你定位问题。搜索、数据仓库/OLAP、分片，等数据规模真的到了再上。
+
+**第 7 步，上线。** 构建产物通过 **CI/CD** 发布；Docker 固定环境，Kubernetes 编排多服务，Serverless 处理事件，Edge 把代码放到离用户近的地方。发布前跑迁移和测试，发布后看健康检查、错误率和延迟；出问题先回滚。蓝绿、金丝雀和功能开关，都是让发布影响可控的工具。
+
+**第 8 步，安全。** XSS、CSRF、SQL 注入都来自“信任了输入”。参数化查询、输出转义、`HttpOnly`/`SameSite`、CORS、CSP、WAF、限流和密钥管理，各自守一条边界。依赖供应链用锁文件、审计、SBOM 和最小权限；Base64 不是加密，JWT 也不等于加密。
+
+**第 9 步，SaaS。** 多租户要让 `tenant_id` 进入每条查询，RLS 做兜底；Stripe/Paddle 收钱，Webhook 开通权益，功能开关和 A/B 测试控制发布。实时通知先用 SSE，双向协作才用 WebSocket，音视频才用 WebRTC。企业客户会问 GDPR/CCPA、SOC 2/ISO 27001、PCI DSS，合规是流程和证据。
+
+**第 10 步，AI。** LLM 只能看到上下文窗口里的 token；照片少时直接拼 Prompt，多到放不下时用 Embedding、向量库和 RAG。接多家模型用 AI Gateway；读 EXIF、查天气用 tool calling 和 MCP；流式输出改善等待，eval 和 guardrail 控制质量与风险。
+
+**产业与岗位。** 上游是 W3C、WHATWG、TC39、IETF、浏览器厂商、云厂商、CDN 和开源基金会；中游是框架团队、数据库和工具公司；下游是平台/SaaS、企业研发、外包和独立开发者。岗位把工程拆成前端、后端、全栈、DevOps/SRE、安全、QA、数据，再加上产品、设计、技术管理和 DevRel。
+
+还会不断出现新词，但判断方式不变：**它解决哪一层的问题？什么时候生效？替换了什么、代价是什么？** 能回答这三个问题，你就不需要靠背术语来理解 Web。
+
+## 参考资料与灵感来源
+
+叙事结构参考了「架构师阿Q」的《互联网架构就这？1个故事讲清楚》及其“一个故事讲清楚”系列：先给一个具体场景，再逐步加需求，每一步只引入被这一步逼出来的技术。技术结论以下面的规范和官方文档为准。
+
+- **视频与叙事**：[互联网架构就这？1个故事讲清楚](https://www.bilibili.com/video/BV1M15Q6eEhL/)
+- **标准**：[HTML Standard](https://html.spec.whatwg.org/)、[ECMAScript](https://tc39.es/ecma262/)、[HTTP Semantics RFC 9110](https://www.rfc-editor.org/rfc/rfc9110)、[HTTP Caching RFC 9111](https://www.rfc-editor.org/rfc/rfc9111)
+- **浏览器与体验**：[MDN Web Docs](https://developer.mozilla.org/)、[Core Web Vitals](https://web.dev/articles/vitals)、[WCAG 2.2](https://www.w3.org/TR/WCAG22/)
+- **后端与安全**：[OAuth 2.0 RFC 6749](https://www.rfc-editor.org/rfc/rfc6749)、[OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html)、[OWASP Top 10](https://owasp.org/www-project-top-ten/)、[OWASP API Security Top 10](https://owasp.org/www-project-api-security/)
+- **数据与运维**：[PostgreSQL 文档](https://www.postgresql.org/docs/)、[Redis 文档](https://redis.io/docs/latest/)、[OpenTelemetry](https://opentelemetry.io/docs/)
+- **AI 应用**：[Model Context Protocol](https://modelcontextprotocol.io/)

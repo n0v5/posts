@@ -1,6 +1,9 @@
 ---
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import SeriesBanner from '../components/series/SeriesBanner.astro';
+import SeriesNav from '../components/series/SeriesNav.astro';
+import { seriesConfig } from '../data/series';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -22,10 +25,34 @@ const published = post.data.pubDate.toLocaleDateString('zh-CN', {
   month: 'long',
   day: 'numeric',
 });
+
+const seriesId = post.data.series;
+const seriesPosts = seriesId
+  ? (await getCollection('blog', (entry) => entry.data.series === seriesId)).sort(
+      (a, b) => (a.data.seriesOrder ?? 0) - (b.data.seriesOrder ?? 0)
+    )
+  : [];
+const seriesIndex = seriesPosts.findIndex((entry) => entry.id === post.id);
+const seriesPrev = seriesIndex > 0 ? seriesPosts[seriesIndex - 1] : null;
+const seriesNext =
+  seriesIndex >= 0 && seriesIndex < seriesPosts.length - 1 ? seriesPosts[seriesIndex + 1] : null;
+const seriesPart = seriesConfig.parts.find((part) => part.order === post.data.seriesPart);
+const isAppendix = post.data.seriesOrder === 99;
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
   <article>
+    {
+      seriesId && (
+        <SeriesBanner
+          seriesId={seriesId}
+          seriesTitle={seriesConfig.title}
+          partTitle={seriesPart?.title ?? ''}
+          order={post.data.seriesOrder ?? 0}
+          appendix={isAppendix}
+        />
+      )
+    }
     <header class="mb-10 border-b border-zinc-200 dark:border-zinc-800 pb-6">
       <div class="flex flex-wrap items-start justify-between gap-3">
         <h1 class="text-3xl font-extrabold tracking-tight">{post.data.title}</h1>
@@ -67,6 +94,12 @@ const published = post.data.pubDate.toLocaleDateString('zh-CN', {
     <div class="post-content">
       <Content />
     </div>
+
+    {
+      seriesId && (
+        <SeriesNav prev={seriesPrev} next={seriesNext} seriesTitle={seriesConfig.title} />
+      )
+    }
 
     <p class="mt-12 text-sm">
       <a href={baseUrl} class="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-50 transition">

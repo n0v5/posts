@@ -1,0 +1,144 @@
+---
+title: "证明系统与可靠性：证明作为符号对象"
+pubDate: 2026-11-03
+description: "引入 Hilbert 式命题证明系统，把‘证明’写成可按规则检查的有限序列，并证明可靠性：可推出的公式一定在所有模型中为真。"
+tags: ["元数学", "逻辑", "证明论"]
+series: "forms-boundary"
+seriesPart: 1
+seriesOrder: 3
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 1–2 篇：结构、满足、有效性与语义后承。
+- 有限序列、归纳法、真值表。
+
+## 本篇新术语
+
+- **公理模式**：用公式模板一次给出无穷多条公理。
+- **推理规则**：从若干公式得到新公式的机械规则。
+- **形式证明**：按公理与规则写出的有限公式序列。
+- **演绎**：从一组前提 $\Gamma$ 出发的形式证明。
+- **可靠性**：凡是可推出的，都在语义上成立。
+
+## 问题：语义后承能机械检查吗？
+
+$\Gamma\models\varphi$ 的定义要求检查所有结构与赋值。论域可以无限，结构可以无穷多，这不是一台机器能直接穷举的对象。我们需要另一条路：只检查符号串的形状，按固定规则一步步变形。如果这个语法过程可靠，那么每写出一个证明，就得到一个语义结论。
+
+这就是证明系统的目标：把“论证”变成**有限、可检查的符号对象**。它不要求证明短，也不要求证明漂亮；它只要求每一步都能被规则验证。
+
+<Definition number="3.1" title="命题 Hilbert 系统">
+公式由命题变量与 $\neg,\to$ 生成；$\land,\lor$ 可通过缩写引入。公理模式为：
+
+- **A1**：$\varphi\to(\psi\to\varphi)$；
+- **A2**：$(\varphi\to(\psi\to\chi))\to((\varphi\to\psi)\to(\varphi\to\chi))$；
+- **A3**：$(\neg\psi\to\neg\varphi)\to((\neg\psi\to\varphi)\to\psi)$。
+
+唯一的推理规则是**分离规则**（modus ponens）：从 $\varphi$ 与 $\varphi\to\psi$ 推出 $\psi$。
+
+从前提集 $\Gamma$ 出发的一个**演绎**是有限序列 $\varphi_1,\dots,\varphi_n$，其中每个 $\varphi_i$ 要么是某条公理模式的实例，要么属于 $\Gamma$，要么由前面的两个公式经分离规则得到。若存在以 $\varphi$ 结尾的演绎，记 $\Gamma\vdash\varphi$。
+</Definition>
+
+逐字解构：公理模式不是“一条公理”，而是“对所有公式 $\varphi,\psi,\chi$ 都成立的一族形状”。分离规则只看来两个公式的形状：一个必须是另一个的蕴含前件。它不检查内容，也不检查前提是否为真。
+
+<Metaphor title="证明是棋谱，规则是合法走法" breaking="棋规本身不保证棋局描述现实；形式证明的每一步合法，也不保证前提为真。可靠性是额外定理，不是‘规则看起来合理’的同义词。">
+把形式证明想成一份棋谱：每一步都必须符合规则，裁判可以逐行检查。这个类比能说明“可检查”，但不能说明“真”。棋谱可以完全合法却描述一盘虚构的棋局；证明可以完全合法却从假前提出发。
+</Metaphor>
+
+**易错边界**：$\Gamma\vdash\varphi$ 只表示存在一个语法演绎。它不表示 $\varphi$ 为真，也不表示 $\Gamma$ 有模型。可靠性会告诉我们：若 $\Gamma$ 的模型存在，则演绎保真；但可靠性本身也要证明。
+
+## 一个具体演绎
+
+在空前提集下，$p\to p$ 是可证的：
+
+1. $p\to((p\to p)\to p)$，A1，取 $\varphi=p$、$\psi=p\to p$。
+2. $(p\to((p\to p)\to p))\to((p\to(p\to p))\to(p\to p))$，A2，取 $\varphi=p$、$\psi=p\to p$、$\chi=p$。
+3. $(p\to(p\to p))\to(p\to p)$，由 1、2 用分离规则。
+4. $p\to(p\to p)$，A1，取 $\varphi=p$、$\psi=p$。
+5. $p\to p$，由 4、3 用分离规则。
+
+这段序列没有使用任何前提，也没有使用真值表。它只检查了公式形状与分离规则。读起来绕，是因为 Hilbert 系统把“推理”压到了极少的规则上；自然演绎会更接近日常证明，但规则更多。
+
+## 可靠性
+
+<Theorem number="3.1" title="命题 Hilbert 系统的可靠性">
+对任意公式集 $\Gamma$ 与公式 $\varphi$，若 $\Gamma\vdash\varphi$，则 $\Gamma\models\varphi$。
+</Theorem>
+
+<Proof>
+对演绎长度 $n$ 做归纳。设 $\varphi_1,\dots,\varphi_n$ 是从 $\Gamma$ 出发的演绎。
+
+**基始**：若 $\varphi_i$ 属于 $\Gamma$，则任何满足 $\Gamma$ 的结构与赋值都满足它。若 $\varphi_i$ 是 A1 的实例，设任意赋值使 $\varphi$ 为真；若 $\psi$ 为真，则 $\psi\to\varphi$ 为真；若 $\psi$ 为假，则 $\psi\to\varphi$ 仍为真，所以 $\varphi\to(\psi\to\varphi)$ 为真。A2 与 A3 是经典重言式，可用真值表逐行检查；这里不堆砌八行表格。
+
+**归纳步**：若 $\varphi_i$ 由 $\varphi_j$ 与 $\varphi_k$ 经分离规则得到，其中 $\varphi_k=\varphi_j\to\varphi_i$，且 $j,k<i$。由归纳假设，$\Gamma\models\varphi_j$ 且 $\Gamma\models\varphi_j\to\varphi_i$。取任意满足 $\Gamma$ 的 $\mathcal{A},s$；则 $\mathcal{A},s\models\varphi_j$ 且 $\mathcal{A},s\models\varphi_j\to\varphi_i$。按蕴含的真值定义，$\mathcal{A},s\models\varphi_i$。因此 $\Gamma\models\varphi_i$。
+
+归纳完成，所以演绎的最后一项 $\varphi_n=\varphi$ 满足 $\Gamma\models\varphi$。
+</Proof>
+
+这个证明的结构值得记住：**对语法对象做归纳，把每个规则对应到一条语义保真性质**。后面一阶逻辑的可靠性是同一骨架，只是多了量词规则与赋值操作；量词部分的细节在这里标记为证明骨架，不展开机械代换。
+
+## 一致性
+
+<Definition number="3.2" title="一致性">
+公式集 $\Gamma$ 是**不一致**的，若存在公式 $\varphi$，使 $\Gamma\vdash\varphi$ 且 $\Gamma\vdash\neg\varphi$；否则称 $\Gamma$ 一致。
+</Definition>
+
+<Theorem number="3.2" title="有模型的公式集一致">
+若 $\Gamma$ 有模型，则 $\Gamma$ 一致。
+</Theorem>
+
+<Proof>
+反设 $\Gamma$ 不一致，则存在 $\varphi$ 使 $\Gamma\vdash\varphi$ 且 $\Gamma\vdash\neg\varphi$。由可靠性，$\Gamma\models\varphi$ 且 $\Gamma\models\neg\varphi$。取 $\Gamma$ 的模型 $\mathcal{A},s$，则 $\mathcal{A},s\models\varphi$ 且 $\mathcal{A},s\models\neg\varphi$，这与经典语义中公式与其否定恰有一个为真矛盾。因此 $\Gamma$ 一致。
+</Proof>
+
+注意方向：有模型推出一致；一致是否能推出有模型，是完备性要回答的问题。可靠性只给我们一个方向，不能替代完备性。
+
+## 量词系统的扩展
+
+一阶逻辑的 Hilbert 系统在命题公理上增加量词公理与全称概括规则。典型的量词公理包括 $\forall x\,\varphi\to\varphi[t/x]$（要求 $t$ 对 $x$ 可代入）以及 $\forall x(\varphi\to\psi)\to(\varphi\to\forall x\,\psi)$（要求 $x$ 不在 $\varphi$ 中自由出现）。可靠性证明仍是对演绎归纳，但量词步骤要处理赋值 $s[x\mapsto a]$ 与项指称。
+
+这里只给骨架，因为完整的代入引理与量词公理验证会把本篇拉成半本教材；后续完备性篇会重新回到这些规则，并在需要时补足。**主线结论**是：命题部分的可靠性已完整证明；一阶部分的可靠性按同一归纳骨架成立，量词细节属于支线。
+
+## 替代方案与冗余分析
+
+- **自然演绎**：规则更接近日常推理，证明更短，但规则多，可靠性验证要逐条检查。
+- **相继式演算**：对称、适合结构证明论与 cut elimination；它会在第 12 篇出现。
+- **语义表**：从“找反模型”出发，适合自动搜索，但与 Hilbert 系统的语法形态不同。
+- **只做真值表**：命题逻辑可以，一阶逻辑不行；量词需要结构。
+
+## 习题
+
+<Exercise number="3.1" title="验证 A1">
+不用真值表，用语义论证说明 A1 模式 $\varphi\to(\psi\to\varphi)$ 在任意赋值下为真。
+</Exercise>
+
+<Exercise number="3.2" title="补全演绎">
+写出 $p\to p$ 的完整演绎，并指出每一步用的是哪条公理或规则。
+</Exercise>
+
+<Exercise number="3.3" title="可靠性不蕴含完备性">
+用一句话说明：为什么可靠性不能保证所有有效公式都可证？
+</Exercise>
+
+<Exercise number="3.4" title="开放题">
+如果一套证明系统可靠但不完备，它还能有什么用途？请给出一个可能的场景。
+</Exercise>
+
+<Hint>第 3.1 题分“$\varphi$ 为真”和“$\varphi$ 为假”两种情况。第 3.3 题想想可靠性只排除了“可证但无效”，没有排除“有效但不可证”。</Hint>
+
+## 自学检查单
+
+- 我能写出一个形式演绎，并逐行检查它是否合法吗？
+- 我能区分 $\vdash$ 与 $\models$ 吗？
+- 我知道可靠性证明为什么对演绎长度归纳吗？
+- 我知道“有模型”与“一致”的方向关系吗？
+- 我是否把“规则看起来合理”当成了可靠性证明？
+
+## 本章核对来源
+
+- Enderton, *A Mathematical Introduction to Logic*, 2nd ed., 第 2 章：Hilbert 系统与可靠性。
+- Open Logic Project, *Sets, Logic, Computation*：命题证明系统与可靠性章节。
+- Troelstra–Schwichtenberg, *Basic Proof Theory*, 第 1 章：证明系统的一般形态（仅用于对照，不用于本篇技术细节）。
+- 一阶量词可靠性的代入引理与量词公理验证标为证明骨架，未逐条展开。

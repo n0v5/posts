@@ -1,0 +1,149 @@
+---
+title: "附录：参考文献、符号表、术语表与隐喻账本"
+pubDate: 2026-12-01
+description: "《形式的边界》系列的参考资料、符号约定、术语索引、核心隐喻的失效边界、常见误区与阅读路径。"
+tags: ["元数学", "逻辑", "集合论", "数学哲学", "附录"]
+series: "forms-boundary"
+seriesPart: 6
+seriesOrder: 99
+---
+
+import { Definition, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 使用说明
+
+本附录是系列的公共工具箱，不引入新技术。引用到“书/章/定理”层级；没有核对过的页码与原话不写。技术章节中的“证明骨架”表示关键步骤已给出、机械细节留给文献，不表示结论未证。
+
+## 参考文献
+
+### 第一部 逻辑与模型论
+
+- Enderton, Herbert B. *A Mathematical Introduction to Logic*. 2nd ed. Academic Press, 2001.
+- Ebbinghaus, Heinz-Dieter, Jörg Flum, and Wolfgang Thomas. *Mathematical Logic*. 2nd ed. Springer, 1994.
+- Marker, David. *Model Theory: An Introduction*. Springer, 2002.
+- Open Logic Project. *Sets, Logic, Computation*.
+
+### 第二部 可计算性与不完备性
+
+- Boolos, George S., John P. Burgess, and Richard C. Jeffrey. *Computability and Logic*. 5th ed. Cambridge University Press, 2007.
+- Kleene, Stephen C. *Introduction to Metamathematics*. North-Holland, 1952.
+- Smullyan, Raymond M. *Gödel's Incompleteness Theorems*. Oxford University Press, 1992.
+- Franzén, Torkel. *Gödel's Theorem: An Incomplete Guide to Its Use and Abuse*. A K Peters, 2005.
+- Troelstra, Anne S., and Helmut Schwichtenberg. *Basic Proof Theory*. 2nd ed. Cambridge University Press, 2000.
+- Simpson, Stephen G. *Subsystems of Second Order Arithmetic*. 2nd ed. Cambridge University Press, 2009.
+
+### 第三部 公理化集合论
+
+- Kunen, Kenneth. *Set Theory: An Introduction to Independence Proofs*. North-Holland, 1980.
+- Jech, Thomas. *Set Theory*. 3rd millennium ed. Springer, 2003.
+- Kanamori, Akihiro. *The Higher Infinite: Large Cardinals in Set Theory from Their Beginnings*. 2nd ed. Springer, 2003.
+- Kunen, Kenneth. *The Foundations of Mathematics*. College Publications, 2009.
+- Devlin, Keith. *Constructibility*. Springer, 1984.
+- Maddy, Penelope. *Defending the Axioms*. Oxford University Press, 2011.
+
+### 第四部 哲学逻辑
+
+- Priest, Graham. *An Introduction to Non-Classical Logic: From If to Is*. 2nd ed. Cambridge University Press, 2008.
+- Blackburn, Patrick, Maarten de Rijke, and Yde Venema. *Modal Logic*. Cambridge University Press, 2001.
+- Beall, Jc, and Bas C. van Fraassen. *Possibilities and Paradox*. Oxford University Press, 2003.
+- Field, Hartry. *Saving Truth from Paradox*. Oxford University Press, 2008.
+- Restall, Greg. *An Introduction to Substructural Logics*. Routledge, 2000.
+- Read, Stephen. *Relevant Logic*. Blackwell, 1988.
+- Humberstone, Lloyd. *The Connectives*. MIT Press, 2011.
+- Stanford Encyclopedia of Philosophy: “The Liar Paradox”, “Truth”, “Logical Consequence”, “Logical Pluralism”, “Free Logic”, “Paraconsistent Logic”.
+
+### 第五部 数学哲学与历史
+
+- Shapiro, Stewart. *Thinking About Mathematics*. Oxford University Press, 2000.
+- Benacerraf, Paul, and Hilary Putnam, eds. *Philosophy of Mathematics: Selected Readings*. 2nd ed. Cambridge University Press, 1983.
+- van Heijenoort, Jean, ed. *From Frege to Gödel: A Source Book in Mathematical Logic, 1879–1931*. Harvard University Press, 1967.
+- Hamkins, Joel David. *Lectures on the Philosophy of Mathematics*. MIT Press, 2020.
+- Maddy, Penelope. *Naturalism in Mathematics*. Oxford University Press, 1997.
+- Detlefsen, Michael. *Hilbert's Program*. Reidel, 1986.
+- Dummett, Michael. *Elements of Intuitionism*. 2nd ed. Oxford University Press, 2000.
+- Troelstra, Anne S., and Dirk van Dalen. *Constructivism in Mathematics*. North-Holland, 1988.
+- Stanford Encyclopedia of Philosophy: “Logicism”, “Formalism in the Philosophy of Mathematics”, “Intuitionism in the Philosophy of Mathematics”, “Structuralism in the Philosophy of Mathematics”, “Philosophy of Mathematics”, “Large Cardinals and Determinacy”.
+
+## 符号表
+
+- $\varphi,\psi,\chi$：公式。
+- $\Gamma,\Delta$：公式集或相继式的左右边。
+- $\vdash$：语法可证。
+- $\models$：语义后承。
+- $\Vdash$：力迫关系；在直觉主义语义中也表示“在某世界为真”。
+- $\ulcorner\varphi\urcorner$：公式 $\varphi$ 的 Gödel 编码。
+- $\mathrm{Con}(T)$：理论 $T$ 一致。
+- $\mathrm{Prov}_T(x)$：$T$ 中编码为 $x$ 的公式可证。
+- $\mathrm{Tr}(x)$：真理谓词。
+- $\mathcal{P}(A)$：幂集。
+- $\aleph_0,\aleph_1,\aleph_2$：基数。
+- $\omega,\omega_1,\varepsilon_0$：序数。
+- $\kappa,\lambda$：基数或序数变量。
+- $\mathrm{cf}(\kappa)$：共尾性。
+- $\Box,\Diamond$：必然、可能。
+- $\mathrm{T},\mathrm{F},\mathrm{N},\mathrm{B}$：真、假、未定、既真又假（视上下文）。
+
+## 术语表
+
+- **元数学**：研究形式系统本身的数学，包括语法、语义、证明、可计算性与一致性。
+- **语法**：符号串的形状与变形规则。
+- **语义**：符号在结构中的解释与真值。
+- **可靠性**：可推出蕴含有效。
+- **完备性**：有效蕴含可推出。
+- **紧致性**：有限可满足推出整体可满足。
+- **可计算可枚举**：可被机器逐个列出。
+- **算术化**：把语法对象编码为自然数。
+- **对角线引理**：构造自指句的固定点定理。
+- **力迫**：通过 generic extension 构造新模型的方法。
+- **构造性宇宙 $L$**：只加入可定义子集的内模型。
+- **大基数**：具有强反射性质的基数。
+- **BHK 解释**：把证明读成构造的解释。
+- **真值间隙**：句子既不真也不假。
+- **次协调逻辑**：允许矛盾为真但不爆炸的逻辑。
+- **逻辑多元论**：存在多个合法的逻辑后承关系。
+
+## 隐喻账本
+
+- **语法是棋规，语义是棋局**：说明合法形状与意义的分工；破裂点是棋规不决定现实价值，语法不自动指向对象。
+- **公式是程序，结构是运行环境**：说明满足关系；破裂点是公式没有执行、资源与副作用。
+- **证明是棋谱**：说明可检查性；破裂点是合法性不保证前提为真。
+- **有限碎片拼出无限模型**：说明紧致性；破裂点是不提供构造算法，二阶逻辑失效。
+- **公式是一把筛子**：说明可定义性；破裂点是公式不创造集合，可定义性相对结构与参数。
+- **身份证号**：说明 Gödel 编码；破裂点是编号不是意义或真值。
+- **句子照镜子**：说明自指固定点；破裂点是句子不字面包含自己。
+- **系统给自己开健康证明**：说明第二定理；破裂点是 Con(T) 是内部句子，不是外部保证。
+- **外延公理像重写 equals()**：说明集合相等；破裂点是集合没有内存地址。
+- **序数是排队的位置**：说明良序类型；破裂点是序数是集合，不是外在标签。
+- **从每个盒子里选一个球**：说明选择公理；破裂点是存在不等于可构造。
+- **可定义的宇宙**：说明 $L$；破裂点是“可定义”相对于模型内部语言。
+- **在模型外面加房间**：说明力迫；破裂点是 $M[G]$ 是新模型，不是 $M$ 的内部改造。
+- **更高的望远镜**：说明大基数；破裂点是反射原则，不是更远的经验对象。
+- **真理是一面镜子**：说明真谓词；破裂点是真谓词是语言装置，不是世界之镜。
+- **逻辑是真理的守门员**：说明后承；破裂点是逻辑不保证前提为真。
+- **数学是建造**：说明直觉主义；破裂点是构造是心智的、可交流的，不是物理施工。
+- **不同的地图**：说明学派比较；破裂点是地图不是领土，学派是理想类型。
+
+## 常见误区
+
+1. **“Gödel 证明了所有数学都不完备。”** 不。第一定理适用于递归公理化、能表示基本算术的理论；$\mathrm{Th}(\mathbb{N})$ 完备但不可递归公理化。
+2. **“Gödel 句是假的。”** 在标准模型中，若 $T$ 一致，Gödel 句为真；它只是 $T$ 不可证。
+3. **“第二定理说一致性无法证明。”** 它说不能在 $T$ 内部用 $T$ 的手段证明；Gentzen 在更强系统中证明 $\mathrm{Con}(\mathrm{PA})$。
+4. **“CH 是假的。”** CH 独立于 ZFC；$L$ 让它真，Cohen 力迫让它假。
+5. **“力迫改变了真实宇宙。”** 力迫构造新模型 $M[G]$；generic 对象通常在 $M$ 外。
+6. **“直觉主义就是没有逻辑。”** 直觉主义有完整的逻辑与语义；它改变的是证明与真值的理解。
+7. **“形式主义认为数学是无意义的游戏。”** 希尔伯特区分有穷内容数学与理想数学；形式化是为了证明安全性，不是否认内容。
+8. **“Tarski 说真理不存在。”** 他说同一语言的真理谓词不能在该语言内定义；可以在元语言中分层定义。
+9. **“多值逻辑只是给未知加一个值。”** 它改变了有效性与连接词语义；“未知”只是其中一种解读。
+10. **“逻辑多元论就是怎么都行。”** 多元论要求说明哪些逻辑 admissible、在什么语境适用。
+
+## 阅读路径
+
+- **完整路径**：第 0–30 篇。
+- **核心速览**：第 0、4、10、13、17、24、30 篇。
+- **逻辑与计算**：第 0–12 篇，再读第 20–25 篇。
+- **集合论与基础**：第 0–19 篇，再读第 26–30 篇。
+- **哲学路径**：第 0、4、10–11 篇，再读第 20–30 篇。
+
+## 核对说明
+
+本系列的公开资源核对以 Stanford Encyclopedia of Philosophy、Open Logic Project、arXiv 与公开讲义为主；教材用于章节级对照。主线定理至少两源交叉核对；支线定理标注“证明骨架”。没有核对过的页码、原话与特定版本定理编号不写入正文。若发现错误，优先修正定义与证明边界，再修正叙述。

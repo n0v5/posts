@@ -1,0 +1,118 @@
+---
+title: "证明论与强度：cut elimination、序数分析与 Hilbert 纲领的边界"
+pubDate: 2026-11-12
+description: "从相继式演算与 cut elimination 出发，说明 Gentzen 如何用 ε₀ 归纳证明算术一致，以及序数分析、Goodstein 与 reverse math 如何度量证明强度。"
+tags: ["元数学", "逻辑", "证明论", "不完备性"]
+series: "forms-boundary"
+seriesPart: 2
+seriesOrder: 12
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 3–4 篇：Hilbert 系统、可靠性、完备性。
+- 第 9–11 篇：算术化、Gödel 第一与第二定理、一致性。
+- 序数的直观概念（第 14 篇会正式定义；本篇只用“比自然数更长的良序”这一操作直觉）。
+
+## 本篇新术语
+
+- **相继式**：形如 $\Gamma\Rightarrow\Delta$ 的表达式，表示“若 $\Gamma$ 全真，则 $\Delta$ 至少一真”。
+- **cut elimination**：消去证明中“先证明引理再使用”的切规则，得到直接证明。
+- **序数分析**：用序数度量理论能证明的良序递归，从而给出证明论强度。
+- **证明论强度**：一个理论能证明多少递归良序或一致性，而不仅是它能证明哪些句子。
+- **reverse math**：用二阶算术子系统度量经典数学定理的强度。
+
+## 问题：Gödel 之后，Hilbert 纲领还剩什么？
+
+第二定理说：足够强的系统不能在自己的规则内证明自己一致。Hilbert 纲领要求用“有穷的、无可争议的方法”证明整个数学的一致性，这似乎被堵死了。
+
+Gentzen 的回应是：把“有穷方法”稍微放宽一点。他用直到 $\varepsilon_0$ 的超限归纳证明算术一致；这个原则不是 PA 可形式化的，所以不违反第二定理。证明论的任务于是从“绝对地证明一致”变成“精确度量：一个理论需要多强的原则才能证明另一个理论的一致”。
+
+<Definition number="12.1" title="相继式与切规则">
+相继式 $\Gamma\Rightarrow\Delta$ 中，$\Gamma,\Delta$ 是有限公式多重集。直觉读法是：若 $\Gamma$ 中所有公式为真，则 $\Delta$ 中至少一个公式为真。
+
+相继式演算的规则分为结构规则、逻辑规则与切规则。切规则写作
+
+$$
+\frac{\Gamma\Rightarrow\Delta,A \qquad A,\Pi\Rightarrow\Lambda}{\Gamma,\Pi\Rightarrow\Delta,\Lambda}.
+$$
+
+它允许先证明引理 $A$，再在另一处使用 $A$。**cut elimination** 说：任何使用切规则的证明都可以改写成不使用切规则的证明。
+</Definition>
+
+<Metaphor title="消去证明中的绕路" breaking="cut elimination 不保证证明变短；消去切之后，证明可能指数级膨胀。它保证的是‘可以直接从子公式推出’，不是‘更容易读’。">
+把切规则想成“先绕到引理再回来”。cut elimination 说可以修一条直达路线。这个比喻能说明“消除中间引理”，但不能说明成本：直达路线可能长得惊人。
+</Metaphor>
+
+<Theorem number="12.1" title="经典相继式演算的 cut elimination">
+若相继式 $\Gamma\Rightarrow\Delta$ 在经典相继式演算 LK 中可证，则它有一个无切证明。
+</Theorem>
+
+<Proof>
+证明骨架：对切公式的复杂度与证明的切rank做双重归纳。若切公式是某个逻辑规则的结论，就把切上移，交换规则顺序；若切公式是主公式，就消去这一刀，用两侧的子公式重新组合。结构规则与初始相继式直接处理。关键的技术难点是：上移切时可能产生新的切，需要用一个良基的复杂度度量保证递归终止。完整的变换表很长，此处只给归纳骨架与终止理由。
+</Proof>
+
+无切证明有**子公式性质**：证明中出现的公式都是结论中公式的子公式。这个性质是序数分析与一致性证明的基础，因为它把“证明中可能出现什么”压到可控制的范围内。
+
+## Gentzen 的一致性证明
+
+<Theorem number="12.2" title="Gentzen（陈述）">
+设 $\mathrm{TI}(\varepsilon_0)$ 表示直到 $\varepsilon_0$ 的超限归纳原则。在原始递归算术 PRA 加上 $\mathrm{TI}(\varepsilon_0)$ 中，可以证明 PA 的一致性。
+</Theorem>
+
+<Proof sketch>
+把 PA 的证明做 cut elimination，再给每个无切证明分配一个小于 $\varepsilon_0$ 的序数，使得：若存在 PA 对矛盾的证明，就能构造一条无限下降的序数序列。$\mathrm{TI}(\varepsilon_0)$ 排除无限下降，因此不存在这样的证明。关键步骤是序数赋值对规则保持下降，细节属于序数分析的机械部分。
+</Proof>
+
+为什么这不违反第二定理？因为 $\mathrm{TI}(\varepsilon_0)$ 不是 PA 可形式化的原则。Gentzen 的证明在更强的元理论中进行；它证明的是“PA 一致”，而不是“PA 在自身中证明自己一致”。
+
+## 强度与独立性
+
+- **Goodstein 定理**：每个 Goodstein 序列最终回到 $0$。它在 PA 中不可证，但在更强的系统（如二阶算术的某些片段）中可证；证明用 $\varepsilon_0$ 以下的序数下降。
+- **Paris–Harrington 定理**：有限 Ramsey 定理的一个加强版，在 PA 中不可证；它给出了 PA 不能捕捉的“组合数学真理”。
+- **reverse math**：把经典数学定理放在二阶算术子系统上比较。$\mathrm{RCA}_0$ 是基础系统，$\mathrm{WKL}_0$ 加入弱 König 引理，$\mathrm{ACA}_0$ 加入算术概括。许多定理的“强度”由它能推出哪个子系统决定。本篇只给地图，不展开技术细节。
+
+## 替代方案与冗余分析
+
+- **模型论强度**：用一致性强度、大基数层级度量；它比较的是集合论模型，不是证明变换。
+- **证明论强度**：用序数分析度量；它更细，能区分 PA 与 $\mathrm{ACA}_0$ 等系统。
+- **reverse math**：把“某个定理需要多强的存在性假设”变成子系统包含问题；它是证明论强度的应用化。
+- **把 cut elimination 当成算法优化**：它的主要用途是证明论分析，不是让程序跑得更快。
+
+## 习题
+
+<Exercise number="12.1" title="切规则">
+用一句话解释切规则的“先证引理再用”直觉，并说明 cut elimination 去掉了什么。
+</Exercise>
+
+<Exercise number="12.2" title="第二定理">
+为什么 Gentzen 的证明不违反 Gödel 第二定理？请指出多用了什么原则。
+</Exercise>
+
+<Exercise number="12.3" title="强度比较">
+如果理论 $T_1$ 能证明 $T_2$ 的一致性，能否说 $T_1$ 比 $T_2$ 强？请说明需要补充什么条件。
+</Exercise>
+
+<Exercise number="12.4" title="开放题">
+序数分析把“证明强度”变成一个序数。你认为这种度量捕捉了理论的什么方面？它遗漏了什么？
+</Exercise>
+
+<Hint>第 12.2 题注意 $\mathrm{TI}(\varepsilon_0)$ 不在 PA 中。第 12.3 题考虑“证明一致性”与“证明更多算术句子”是否等价。</Hint>
+
+## 自学检查单
+
+- 我能解释相继式与切规则吗？
+- 我知道 cut elimination 的子公式性质有什么用吗？
+- 我能说明 Gentzen 证明与第二定理为什么不冲突吗？
+- 我知道序数分析度量的是什么吗？
+- 我是否把“证明论强度”与“证明长度”混为一谈？
+
+## 本章核对来源
+
+- Troelstra–Schwichtenberg, *Basic Proof Theory*, 第 1–3 章：相继式演算与 cut elimination。
+- Simpson, *Subsystems of Second Order Arithmetic*：reverse math 的地图与强度层级。
+- Rathjen 的序数分析综述与 Gentzen 原始论文（概念核对，不引页码）。
+- Open Logic Project, *Sets, Logic, Computation*：证明论与序数分析导论。
+- cut elimination 的完整变换表与序数赋值的机械细节标为证明骨架。

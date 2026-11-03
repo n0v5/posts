@@ -1,0 +1,118 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { seriesConfig } from '../../data/series';
+
+export function getStaticPaths() {
+  return [{ params: { id: seriesConfig.id } }];
+}
+
+const posts = (await getCollection('blog', (entry) => entry.data.series === seriesConfig.id)).sort(
+  (a, b) => (a.data.seriesOrder ?? 0) - (b.data.seriesOrder ?? 0)
+);
+const baseUrl = import.meta.env.BASE_URL;
+const bodyPosts = posts.filter((post) => post.data.seriesOrder !== 99);
+const appendixPosts = posts.filter((post) => post.data.seriesOrder === 99);
+const groups = seriesConfig.parts
+  .filter((part) => part.order !== 6)
+  .map((part) => ({
+    ...part,
+    posts: bodyPosts.filter((post) => post.data.seriesPart === part.order),
+  }));
+const appendixPart = seriesConfig.parts.find((part) => part.order === 6);
+const byOrder = new Map(posts.map((post) => [post.data.seriesOrder ?? 0, post]));
+
+function labelFor(order: number) {
+  if (order === 0) return '导论';
+  if (order === 99) return '附录';
+  return `第 ${order} 篇`;
+}
+---
+
+<BaseLayout title={seriesConfig.title} description={seriesConfig.description}>
+  <article class="series-index">
+    <header class="series-index-header">
+      <p class="series-index-kicker">连载 · {bodyPosts.length} 篇 + 附录</p>
+      <h1>{seriesConfig.title}</h1>
+      <p>{seriesConfig.description}</p>
+    </header>
+
+    <section class="series-index-paths">
+      <h2>阅读路径</h2>
+      {
+        seriesConfig.readingPaths.map((path) => (
+          <div class="series-index-path">
+            <h3>{path.title}</h3>
+            <p>{path.note}</p>
+            <p class="series-index-path-links">
+              {path.orders.map((order) => {
+                const post = byOrder.get(order);
+                return post ? (
+                  <a href={`${baseUrl}${post.id}/`}>{labelFor(order)}</a>
+                ) : (
+                  <span>{labelFor(order)}（待写）</span>
+                );
+              })}
+            </p>
+          </div>
+        ))
+      }
+    </section>
+
+    {
+      groups.map((group) => (
+        <section class="series-index-part">
+          <h2>{group.title}</h2>
+          <p class="series-index-summary">{group.summary}</p>
+          {group.posts.length > 0 ? (
+            <ol class="series-index-list">
+              {group.posts.map((post) => (
+                <li>
+                  <a href={`${baseUrl}${post.id}/`}>
+                    {labelFor(post.data.seriesOrder ?? 0)} · {post.data.title}
+                  </a>
+                  <span class="series-index-desc">
+                    {post.data.description}
+                    {' · '}
+                    {Math.round(((post.body ?? '').replace(/\s+/g, '').length) / 1000)}k 字 · 已完成
+                  </span>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p class="series-index-empty">本部篇目正在编写。</p>
+          )}
+        </section>
+      ))
+    }
+
+    {
+      appendixPart && (
+        <section class="series-index-part">
+          <h2>{appendixPart.title}</h2>
+          <p class="series-index-summary">{appendixPart.summary}</p>
+          {appendixPosts.length > 0 ? (
+            <ol class="series-index-list">
+              {appendixPosts.map((post) => (
+                <li>
+                  <a href={`${baseUrl}${post.id}/`}>{post.data.title}</a>
+                  <span class="series-index-desc">
+                    {post.data.description}
+                    {' · '}
+                    {Math.round(((post.body ?? '').replace(/\s+/g, '').length) / 1000)}k 字 · 已完成
+                  </span>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p class="series-index-empty">附录正在编写。</p>
+          )}
+        </section>
+      )
+    }
+
+    <p class="mt-10 text-sm">
+      <a href={baseUrl} class="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-50 transition">← 返回文章列表</a>
+    </p>
+  </article>
+</BaseLayout>

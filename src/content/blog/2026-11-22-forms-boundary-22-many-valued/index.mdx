@@ -1,0 +1,111 @@
+---
+title: "多值、模糊与自由逻辑：真值间隙与存在预设"
+pubDate: 2026-11-22
+description: "削弱二值原则与存在预设：用强 Kleene 三值逻辑制造真值间隙，用模糊逻辑处理程度，用自由逻辑处理空名与空论域。"
+tags: ["逻辑", "哲学逻辑", "多值逻辑", "自由逻辑"]
+series: "forms-boundary"
+seriesPart: 4
+seriesOrder: 22
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 1–3 篇：经典语义、真值表、量化语义。
+- 第 21 篇：非经典逻辑的动机与 Kripke 语义。
+
+## 本篇新术语
+
+- **多值逻辑**：允许两个以上真值的逻辑。
+- **真值间隙**：某些命题既不真也不假。
+- **强 Kleene 逻辑**：三值逻辑的一种，第三值表示“未定/间隙”。
+- **模糊逻辑**：真值取连续统 $[0,1]$，用 t-模处理合取。
+- **自由逻辑**：放宽“每个词项都指称存在对象”的预设，允许空名与空论域。
+
+## 问题：二值原则与非空论域是必然的吗？
+
+经典逻辑默认两件事：每个命题非真即假；每个词项都指称论域中的对象，论域非空。前者是**二值原则**，后者是**存在预设**。
+
+这两条不是逻辑的永恒法则，而是语义选择。多值逻辑削弱二值；自由逻辑削弱存在预设。削弱之后，一些经典重言式会失效，但能处理经典逻辑难以表达的现象：不确定、模糊、空名、空类。
+
+<Definition number="22.1" title="强 Kleene 三值逻辑">
+真值集为 $\{\mathrm{T},\mathrm{F},\mathrm{N}\}$，其中 $\mathrm{N}$ 表示“未定/间隙”。指定值为 $\mathrm{T}$。
+
+- $\neg\mathrm{T}=\mathrm{F}$，$\neg\mathrm{F}=\mathrm{T}$，$\neg\mathrm{N}=\mathrm{N}$。
+- 合取：只要有 $\mathrm{F}$ 就为 $\mathrm{F}$；否则若有 $\mathrm{N}$ 就为 $\mathrm{N}$；否则为 $\mathrm{T}$。
+- 析取：只要有 $\mathrm{T}$ 就为 $\mathrm{T}$；否则若有 $\mathrm{N}$ 就为 $\mathrm{N}$；否则为 $\mathrm{F}$。
+</Definition>
+
+<Theorem number="22.1" title="强 Kleene 中排中律失效">
+在三值指派 $p=\mathrm{N}$ 下，$p\lor\neg p$ 的值为 $\mathrm{N}$，不是指定值。
+</Theorem>
+
+<Proof>
+$\neg p=\neg\mathrm{N}=\mathrm{N}$，所以 $p\lor\neg p=\mathrm{N}\lor\mathrm{N}=\mathrm{N}$。$\mathrm{N}$ 不是指定值，因此该公式不被所有指派满足。
+</Proof>
+
+这个结果说明：多值逻辑不是“经典逻辑加一个未知值”那么简单；它改变了有效性的定义。若把 $\mathrm{N}$ 读作“我们不知道”，那只是认识论解读；若读作“客观上既不真也不假”，那是语义解读。两种解读的哲学后果不同。
+
+<Metaphor title="真值不是开关" breaking="多值逻辑不是说‘真理是一个数’；三值或连续值只是语义模型。真值的序、指定值与连接词解释都需要独立的哲学说明。">
+把二值逻辑想成开关，多值逻辑想成调光器：真值可以处于中间状态。这个比喻能说明“程度”，但不能说明中间值到底是什么；是把“不确定”量化，还是把“部分真”本体化，需要额外论证。
+</Metaphor>
+
+## 模糊逻辑
+
+模糊逻辑把真值取为 $[0,1]$。合取用 t-模：$\min(x,y)$（Gödel）、$\max(0,x+y-1)$（Łukasiewicz）或 $x\cdot y$（乘积）。蕴含由 residuum 定义。不同 t-模给出不同逻辑，选择哪一种取决于你希望“且”如何聚合程度。
+
+模糊逻辑适合处理“高”“温暖”“接近”等程度谓词，但它也有代价：经典排中律失效；条件句的真值可能违反直觉；高阶模糊性（“多高才算高”）难以处理。
+
+## 自由逻辑
+
+经典量化逻辑假设论域非空，且每个常量都指称论域中的对象。自由逻辑放宽这两点：
+
+- 允许空论域；
+- 允许不指称的常量（空名）；
+- 引入存在谓词 $E(x)$，把“存在”与“普通谓词”分开。
+
+在空论域中，$\forall x\,P(x)$ 为真（没有反例），但 $\exists x\,P(x)$ 为假。经典的全称实例公理 $\forall x\,P(x)\to P(c)$ 需要附加“$c$ 存在”才成立。自由逻辑因此修改量词规则与公理，保持可靠性。
+
+## 替代方案与冗余分析
+
+- **超赋值主义**：保留二值，但把“真”定义为在所有精确化下为真；能处理部分定义谓词，但不引入第三值。
+- **次协调逻辑**：允许矛盾为真，而不是真值间隙；下一篇文章讨论。
+- **直觉主义**：不是多值逻辑；它用构造与 Kripke 语义，而不是三值真值表。
+- **把自由逻辑当成“允许空名”的语法补丁**：它改变了量词与存在预设，不只是语法便利。
+
+## 习题
+
+<Exercise number="22.1" title="三值表">
+计算 $p=\mathrm{N}$、$q=\mathrm{F}$ 时 $p\land q$、$p\lor q$、$p\to q$ 的值；其中 $p\to q$ 定义为 $\neg p\lor q$。
+</Exercise>
+
+<Exercise number="22.2" title="排中律">
+解释为什么强 Kleene 逻辑中 $p\lor\neg p$ 不是重言式，并说明这与“未知”解读的关系。
+</Exercise>
+
+<Exercise number="22.3" title="空论域">
+在空论域中，$\forall x\,P(x)$ 与 $\exists x\,P(x)$ 的真值分别是什么？为什么全称实例需要存在预设？
+</Exercise>
+
+<Exercise number="22.4" title="开放题">
+模糊逻辑把真值变成程度。你认为“部分真”是客观的，还是我们语言不精确的反映？请给出理由。
+</Exercise>
+
+<Hint>第 22.1 题按强 Kleene 的连接词规则逐项计算。第 22.3 题注意空论域没有见证，也没有反例。</Hint>
+
+## 自学检查单
+
+- 我能写出强 Kleene 的三值真值规则吗？
+- 我知道多值逻辑中“有效”如何定义吗？
+- 我能解释模糊逻辑的 t-模作用吗？
+- 我知道自由逻辑修改了哪些存在预设吗？
+- 我是否能区分“真值间隙”与“矛盾为真”？
+
+## 本章核对来源
+
+- Priest, *An Introduction to Non-Classical Logic*, 2nd ed., 第 7 章：多值逻辑。
+- Beall–van Fraassen, *Possibilities and Paradox*：多值与模糊逻辑的哲学动机。
+- Nolt, “Free Logic”, *Stanford Encyclopedia of Philosophy*：自由逻辑的存在预设与量词规则。
+- Open Logic Project, *Boxes and Diamonds*：非经典逻辑导论章节。
+- 模糊逻辑的 t-模细节只给例子；本篇展开强 Kleene 与自由逻辑的核心边界。

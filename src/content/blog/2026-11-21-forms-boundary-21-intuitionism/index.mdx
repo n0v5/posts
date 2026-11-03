@@ -1,0 +1,122 @@
+---
+title: "直觉主义与构造性：BHK、Kripke 语义与 Heyting 算术"
+pubDate: 2026-11-21
+description: "用 BHK 解释把证明读成构造，给出直觉主义逻辑的 Kripke 语义，证明排中律不普遍有效，并介绍 Heyting 算术与可实现性。"
+tags: ["逻辑", "哲学逻辑", "直觉主义", "构造性"]
+series: "forms-boundary"
+seriesPart: 4
+seriesOrder: 21
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 1–3 篇：经典语义、证明系统、语义后承。
+- 第 20 篇：Kripke 框架与模态语义。
+- 构造、算法、见证的直观概念。
+
+## 本篇新术语
+
+- **直觉主义**：把数学真理理解为心智构造，而不是独立于心灵的对象的性质。
+- **构造性证明**：给出见证或构造方法的证明，而不仅是反证。
+- **BHK 解释**：Brouwer–Heyting–Kolmogorov 对逻辑连接词的证明解释。
+- **Heyting 算术**：直觉主义版本的皮亚诺算术。
+- **可实现性**：用程序/部分递归函数解释构造性证明的语义。
+
+## 问题：为什么有人拒绝排中律？
+
+经典逻辑接受排中律：对任意命题 $p$，$p\lor\neg p$ 为真。直觉主义者不接受它作为普遍原则，因为知道“$p$ 或 $\neg p$”应当意味着**能构造出其中一个的证明**；而在许多数学问题中，我们既没有 $p$ 的构造，也没有 $\neg p$ 的构造。
+
+这不是“逻辑不严谨”，而是对“证明”的理解不同：经典证明可以只证明“不存在反例”，构造性证明要求给出对象或算法。
+
+<Definition number="21.1" title="BHK 解释">
+对公式的证明按连接词递归解释：
+
+- $\varphi\land\psi$ 的证明是一对：$\varphi$ 的证明与 $\psi$ 的证明。
+- $\varphi\lor\psi$ 的证明是其中一个的证明，并标明是哪一边。
+- $\varphi\to\psi$ 的证明是一个构造：把任意 $\varphi$ 的证明转换为 $\psi$ 的证明。
+- $\forall x\,\varphi(x)$ 的证明是一个方法：对任意 $a$，给出 $\varphi(a)$ 的证明。
+- $\exists x\,\varphi(x)$ 的证明是一个见证 $a$ 加上 $\varphi(a)$ 的证明。
+- $\neg\varphi$ 定义为 $\varphi\to\bot$；$\bot$ 没有证明。
+</Definition>
+
+<Metaphor title="证明是程序" breaking="BHK 是证明的规范说明，不是某种具体编程语言；一个构造性证明不一定能直接运行，也可能需要大量数学信息才能变成程序。">
+把 BHK 解释想成“证明即程序”：合取是配对，析取是标签，蕴含是函数，存在是见证。这个比喻能说明构造性逻辑的计算内容，但不能说明所有数学证明都能自动编译成可执行代码。
+</Metaphor>
+
+**易错边界**：直觉主义不是“把经典逻辑中的排中律删掉”这么简单。它改变了连接词的意义；经典逻辑可以通过双重否定翻译嵌入直觉主义逻辑，但翻译后的公式与原公式的构造内容不同。
+
+## 直觉主义 Kripke 语义
+
+一个直觉主义 Kripke 模型是 $(W,\le,V)$，其中 $W$ 是可能“知识阶段”的集合，$\le$ 是偏序，$V$ 给命题变元指定在每个阶段为真的集合，并要求**单调性**：若 $w\le v$ 且 $w\Vdash p$，则 $v\Vdash p$。
+
+满足关系递归定义：
+
+- $w\Vdash\varphi\land\psi$ 当且仅当两者都成立；
+- $w\Vdash\varphi\lor\psi$ 当且仅当至少一个成立；
+- $w\Vdash\varphi\to\psi$ 当且仅当对所有 $v\ge w$，若 $v\Vdash\varphi$，则 $v\Vdash\psi$；
+- $w\Vdash\neg\varphi$ 当且仅当对所有 $v\ge w$，$v\nVdash\varphi$；
+- $w\Vdash\forall x\,\varphi(x)$ 当且仅当对所有 $a$，$w\Vdash\varphi(a)$；
+- $w\Vdash\exists x\,\varphi(x)$ 当且仅当存在 $a$，$w\Vdash\varphi(a)$。
+
+<Theorem number="21.1" title="排中律不是直觉主义有效的">
+存在直觉主义 Kripke 模型与世界 $w$，使 $w\nVdash p\lor\neg p$。
+</Theorem>
+
+<Proof>
+取两个世界 $w_0\le w_1$。令 $p$ 在 $w_1$ 为真，在 $w_0$ 为假。由单调性，这是合法的。
+
+在 $w_0$：$p$ 为假；$\neg p$ 要求对所有 $v\ge w_0$ 都有 $v\nVdash p$，但 $w_1\ge w_0$ 且 $w_1\Vdash p$，所以 $\neg p$ 在 $w_0$ 为假。于是 $p\lor\neg p$ 在 $w_0$ 为假。
+</Proof>
+
+这个模型说明：排中律不是“逻辑上必然”的；它依赖于我们对阶段与构造的语义约定。经典逻辑可以选择把所有阶段的真值“提前决定”，直觉主义逻辑不允许这种提前决定。
+
+## Heyting 算术与可实现性
+
+Heyting 算术 HA 是直觉主义版本的 PA：语言与 PA 相同，但逻辑是直觉主义逻辑。HA 能证明许多经典算术定理，但在涉及存在性与析取的地方，结论更强：HA 证明 $\exists x\,\varphi(x)$ 时，必须给出一个可构造的见证（在可实现性语义下对应一个程序）。
+
+**可实现性**把公式解释为“实现子”的集合：一个数 $e$ 实现 $\exists x\,\varphi(x)$，若 $e$ 编码一个见证与实现；实现 $\varphi\to\psi$，若 $e$ 是一个把 $\varphi$ 的实现转换为 $\psi$ 的实现的程序。它连接证明论、递归论与类型论。
+
+## 替代方案与冗余分析
+
+- **经典逻辑**：接受排中律，语义更简单，但存在性证明可能不给出见证。
+- **最小逻辑**：连爆炸原则也不接受；比直觉主义更弱。
+- **线性逻辑**：把结构规则也纳入控制，资源敏感；它是次结构逻辑的一种。
+- **把直觉主义当成“构造性算法”**：BHK 是规范，不是编译器；从证明到程序需要额外的实现语义。
+
+## 习题
+
+<Exercise number="21.1" title="BHK">
+用 BHK 解释说明：为什么 $\varphi\lor\neg\varphi$ 不是普遍可证的？
+</Exercise>
+
+<Exercise number="21.2" title="Kripke 反模型">
+画出两个世界的直觉主义模型，使 $p\lor\neg p$ 在起点失败，并检查单调性。
+</Exercise>
+
+<Exercise number="21.3" title="双重否定">
+在直觉主义逻辑中，$\neg\neg(p\lor\neg p)$ 是否可证？请说明它与排中律的区别。
+</Exercise>
+
+<Exercise number="21.4" title="开放题">
+如果一个数学证明不给出见证，它是否仍然“证明了存在”？请分别从经典与直觉主义角度回答。
+</Exercise>
+
+<Hint>第 21.1 题用 BHK 的析取条款：需要一个标签与一个证明。第 21.3 题注意双重否定只排除“排中律的否定”，不给出析取的一个分支。</Hint>
+
+## 自学检查单
+
+- 我能写出 BHK 的五条解释吗？
+- 我能解释直觉主义 Kripke 语义的单调性吗？
+- 我知道排中律为什么不是直觉主义有效的吗？
+- 我能区分“证明存在”与“给出见证”吗？
+- 我是否把直觉主义当成了经典逻辑的简单删减？
+
+## 本章核对来源
+
+- Priest, *An Introduction to Non-Classical Logic*, 2nd ed., 第 6 章：直觉主义逻辑。
+- Troelstra–van Dalen, *Constructivism in Mathematics*, 第 1 章：BHK 与构造性数学。
+- Dummett, *Elements of Intuitionism*, 第 1–2 章：直觉主义的意义理论。
+- Open Logic Project, *Boxes and Diamonds*：直觉主义 Kripke 语义章节。
+- 完备性与可实现性的细节标为骨架；排中律反模型完整展开。

@@ -1,0 +1,136 @@
+---
+title: "语义后承、有效性与表达力边界"
+pubDate: 2026-11-02
+description: "从‘在某个结构中为真’推进到‘在所有结构中为真’，定义有效性与语义后承，并用同构不变性划出一阶表达力的第一道边界。"
+tags: ["元数学", "逻辑", "一阶逻辑"]
+series: "forms-boundary"
+seriesPart: 1
+seriesOrder: 2
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 1 篇：一阶语言、结构、赋值与满足关系。
+- 集合、函数、双射；数学归纳法。
+
+## 本篇新术语
+
+- **可满足**：存在一个结构与赋值使公式为真。
+- **有效**：在所有结构与赋值下都为真。
+- **语义后承**：所有满足前提的结构与赋值都满足结论。
+- **逻辑等价**：两个公式互相语义后承。
+- **同构**：两个结构之间保持常量、函数与关系结构的双射。
+
+## 问题：从“这个结构中为真”到“所有结构中为真”
+
+第 1 篇的满足关系是局部的：给定一个结构和一个赋值，公式要么真要么假。逻辑关心的却不只是某一个结构。我们说“这个论证有效”，意思是：**无论把符号解释成什么，只要前提为真，结论就不可能为假**。
+
+这句话里的“无论怎样解释”必须精确化，否则“有效”会退化成“我觉得反例不存在”。语义后承就是把“所有可能的解释”写成一个量词。
+
+<Definition number="2.1" title="可满足、有效与语义后承">
+设 $\Gamma$ 是一组公式，$\varphi,\psi$ 是公式。
+
+1. $\mathcal{A},s\models\Gamma$ 表示对每个 $\gamma\in\Gamma$ 都有 $\mathcal{A},s\models\gamma$。
+2. $\Gamma\models\varphi$ 表示：对任意结构 $\mathcal{A}$ 与赋值 $s$，若 $\mathcal{A},s\models\Gamma$，则 $\mathcal{A},s\models\varphi$。
+3. $\varphi$ 是**有效**的，若 $\emptyset\models\varphi$；此时记作 $\models\varphi$。
+4. $\varphi$ 是**可满足**的，若存在 $\mathcal{A},s$ 使 $\mathcal{A},s\models\varphi$。
+5. $\varphi$ 与 $\psi$ **逻辑等价**，若 $\varphi\models\psi$ 且 $\psi\models\varphi$。
+</Definition>
+
+逐字解构第 2 条：它先让 $\mathcal{A}$ 与 $s$ 任意跑遍所有可能，然后加一个条件“若前提全真”，最后要求结论也真。它不是“存在一个模型使结论真”，也不是“我们能推出结论”。**语义后承是关于所有反例的否定**：不存在一个让前提全真、结论为假的模型。
+
+<Metaphor title="逻辑后承是“没有反例”" breaking="这里的反例不是一段故事或一张示意图，而是一个精确的结构与赋值；‘没有反例’也不是‘暂时没想到反例’，而是对全体结构的数学量化。">
+把有效论证想成一张地图：只要起点落在前提区域，终点就必然落在结论区域。这个图景能帮助你记住蕴含的方向，但它不能替代结构定义；地图上的“区域”是满足某个公式的全体对象，而不是日常空间。
+</Metaphor>
+
+**易错边界**：$\models$ 是元语言中的关系，不是对象语言里的一个符号。对象语言里可以写公式、证明公式，但不能直接写“这个公式在所有结构中为真”，除非我们另外编码语义。把 $\models$ 当成对象语言连接词，是初学者最常见的越界之一。
+
+## 全称实例
+
+<Theorem number="2.1" title="全称实例是语义后承">
+对任意常量符号 $c$ 与一元关系符号 $P$，有 $\forall x\,P(x)\models P(c)$。
+</Theorem>
+
+<Proof>
+取任意结构 $\mathcal{A}$ 与赋值 $s$，假设 $\mathcal{A},s\models\forall x\,P(x)$。按全称量词的定义，对每个 $a\in A$ 都有 $\mathcal{A},s[x\mapsto a]\models P(x)$。取 $a=c^{\mathcal{A}}$。
+
+这里用一个标准事实：若两个赋值在公式的自由变量上取值相同，则它们满足该公式的情况相同（对公式结构归纳可证，属于赋值一致性引理）。公式 $P(c)$ 不含自由变量 $x$，而 $s[x\mapsto c^{\mathcal{A}}]$ 与 $s$ 在所有自由变量上一致，所以 $\mathcal{A},s\models P(c)$ 与 $\mathcal{A},s[x\mapsto c^{\mathcal{A}}]\models P(x)$ 等价。于是 $\mathcal{A},s\models P(c)$。由于 $\mathcal{A},s$ 任意，得到语义后承。
+</Proof>
+
+这个证明的关键不是“全称当然包含实例”，而是把全称量词的“对所有 $a\in A$”用在常量 $c$ 的指称上。若论域为空，全称命题仍然可以为真，但存在命题会失败；这也是后面自由逻辑会重新审视的地方。
+
+## 逆命题不成立
+
+<Theorem number="2.2" title="从实例不能反推全称">
+$P(c)\nvDash\forall x\,P(x)$。
+</Theorem>
+
+<Proof>
+构造反模型。取论域 $A=\{0,1\}$，令 $c^{\mathcal{A}}=0$，$P^{\mathcal{A}}=\{0\}$。则 $P(c)$ 为真，因为 $0\in P^{\mathcal{A}}$。但 $\forall x\,P(x)$ 为假，因为取 $a=1$ 时 $1\notin P^{\mathcal{A}}$。于是前提真、结论假，语义后承不成立。
+</Proof>
+
+“举一个反例”在元语言中就是给出一个结构和一个赋值。反例必须具体到论域、常量指称与关系外延，不能只说“显然还有别的元素”。
+
+## 同构不变性
+
+<Definition number="2.2" title="同构">
+设 $\mathcal{A},\mathcal{B}$ 是同一签名下的结构。一个双射 $h:A\to B$ 是**同构**，若它保持所有常量、函数与关系：
+
+- 对每个常量 $c$，$h(c^{\mathcal{A}})=c^{\mathcal{B}}$；
+- 对每个 $n$ 元函数 $f$ 与 $a_1,\dots,a_n\in A$，$h(f^{\mathcal{A}}(a_1,\dots,a_n))=f^{\mathcal{B}}(h(a_1),\dots,h(a_n))$；
+- 对每个 $n$ 元关系 $R$ 与 $a_1,\dots,a_n\in A$，$R^{\mathcal{A}}(a_1,\dots,a_n)$ 当且仅当 $R^{\mathcal{B}}(h(a_1),\dots,h(a_n))$。
+</Definition>
+
+<Theorem number="2.3" title="同构结构满足相同的一阶句子">
+若 $\mathcal{A}$ 与 $\mathcal{B}$ 同构，则对任意一阶句子 $\varphi$，$\mathcal{A}\models\varphi$ 当且仅当 $\mathcal{B}\models\varphi$。
+</Theorem>
+
+<Proof sketch>
+对公式结构做归纳。原子公式由同构保持常量、函数与关系直接得到。连接词情形由归纳假设与经典真值表得到。量词情形用双射 $h$ 在论域之间搬运见证：$\mathcal{A}$ 中存在 $a$ 使 $\psi(a)$ 成立，当且仅当 $\mathcal{B}$ 中存在 $h(a)$ 使 $\psi(h(a))$ 成立。自由变量由赋值对应处理；对句子则无需额外赋值。归纳完成。
+</Proof>
+
+同构不变性给出一个必要条件：**若一个性质不是同构不变的，它就不可能由一阶句子定义**。但它不是充分条件；有些性质同构不变，却仍然不能用一阶句子表达。要证明后一类不可能性，需要后面的模型构造工具；这里先把边界画出来，不提前展开。
+
+## 替代方案与冗余分析
+
+- **只定义“在某个结构中为真”**：无法讨论逻辑规律，因为任何公式都能在某个结构中为真。
+- **只定义“可证”**：把逻辑等同于某个证明系统，无法问这个系统是否漏掉了有效公式。语义后承先给出独立的标准，后面才能问证明系统是否够用。
+- **用日常反例代替结构**：容易把“我没想到反例”误当成“没有反例”。结构反例是可检查的数学对象。
+- **把 $\models$ 写进对象语言**：会让语法与语义再次混在一起；若确实要编码语义，需要另建一套算术化或模型论工具。
+
+## 习题
+
+<Exercise number="2.1" title="三段论">
+证明 $\{\forall x(P(x)\to Q(x)),\ \forall x\,P(x)\}\models\forall x\,Q(x)$。
+</Exercise>
+
+<Exercise number="2.2" title="反模型">
+给出一个反模型，说明 $\exists x\,P(x)\nvDash\forall x\,P(x)$。
+</Exercise>
+
+<Exercise number="2.3" title="量词顺序">
+给出一个反模型，说明 $\forall x(P(x)\lor Q(x))\nvDash\forall x\,P(x)\lor\forall x\,Q(x)$。
+</Exercise>
+
+<Exercise number="2.4" title="开放题">
+为什么 $\models$ 不是对象语言的符号？如果硬要把它写进对象语言，我们需要额外造什么？
+</Exercise>
+
+<Hint>第 2.3 题取两个元素，让一个满足 $P$ 不满足 $Q$，另一个反过来。第 2.4 题想想“所有结构”这句话是在哪种语言里说的。</Hint>
+
+## 自学检查单
+
+- 我能逐字解释 $\Gamma\models\varphi$ 中的两个量词吗？
+- 我能区分“可满足”“有效”“可证”吗？
+- 我能为一个非后承关系构造具体反模型吗？
+- 我知道同构不变性只是必要条件吗？
+- 我是否把“没想到反例”当成了“没有反例”？
+
+## 本章核对来源
+
+- Enderton, *A Mathematical Introduction to Logic*, 2nd ed., 第 2 章：有效性与语义后承。
+- Ebbinghaus–Flum–Thomas, *Mathematical Logic*, 第 2 章：结构与同构。
+- Open Logic Project, *Sets, Logic, Computation*：语义后承与同构不变性章节。
+- 同构不变性按标准归纳证明给出骨架；赋值一致性引理的机械细节未展开。

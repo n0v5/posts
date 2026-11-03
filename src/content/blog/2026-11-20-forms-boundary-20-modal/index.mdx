@@ -1,0 +1,129 @@
+---
+title: "模态逻辑：可能世界、正规模态系统与对应理论"
+pubDate: 2026-11-20
+description: "用 Kripke 框架解释必然与可能，定义正规模态系统 K、T、S4、S5，并说明框架性质与模态公理之间的对应。"
+tags: ["逻辑", "哲学逻辑", "模态逻辑"]
+series: "forms-boundary"
+seriesPart: 4
+seriesOrder: 20
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 1–3 篇：一阶语言、结构、满足、语义后承。
+- 命题逻辑的真值表；关系与图的基本概念。
+
+## 本篇新术语
+
+- **模态算子**：$\Box$（必然）与 $\Diamond$（可能）。
+- **可能世界**：Kripke 框架中的节点。
+- **可达关系**：从一个世界到另一个世界的二元关系。
+- **正规模态逻辑**：包含 K 公理与必然化规则的模态系统。
+- **对应理论**：框架性质与模态公理之间的匹配。
+
+## 问题：必然与可能不是真值函数
+
+在命题逻辑中，公式的真值只取决于原子命题的真值。但“必然 $p$”不能只看 $p$ 在当前世界是否为真：$p$ 可能为真，却不必然；也可能假，但可能为真。我们需要一个额外的结构。
+
+Kripke 的答案是：把“可能世界”做成节点，把“可达”做成箭头。$\Box p$ 在 $w$ 为真，当且仅当所有从 $w$ 可达的世界都满足 $p$。这不是本体论承诺，而是一种语义模型：它告诉我们模态词如何被解释。
+
+<Definition number="20.1" title="模态语言与 Kripke 语义">
+模态语言在命题逻辑上加入 $\Box$ 与 $\Diamond$；$\Diamond\varphi$ 定义为 $\neg\Box\neg\varphi$。
+
+一个 **Kripke 框架**是二元组 $(W,R)$，$W$ 是非空世界集，$R\subseteq W\times W$ 是可达关系。一个**模型**是 $(W,R,V)$，$V$ 给每个命题变元指定它在哪些世界为真。
+
+满足关系 $\mathcal{M},w\models\varphi$ 递归定义：
+
+- 命题变元：$\mathcal{M},w\models p$ 当且仅当 $w\in V(p)$；
+- 布尔连接词按经典真值表；
+- $\mathcal{M},w\models\Box\varphi$ 当且仅当对所有 $v\in W$，若 $wRv$，则 $\mathcal{M},v\models\varphi$；
+- $\mathcal{M},w\models\Diamond\varphi$ 当且仅当存在 $v\in W$ 使 $wRv$ 且 $\mathcal{M},v\models\varphi$。
+</Definition>
+
+<Metaphor title="可能世界是节点，可达关系是箭头" breaking="框架不是形而上学承诺；它只是语义模型。不是所有模态词都表示形而上学的必然；道义、时态、认知模态的可达关系各有不同解释。">
+把可能世界想成一张图：世界是节点，可达关系是箭头。$\Box p$ 说“顺着箭头走到的每个节点都满足 p”。这个比喻能说明量词结构，但不能说明“哪个世界是现实的”，也不能说明箭头一定表示形而上学可能性。
+</Metaphor>
+
+## 正规模态系统
+
+<Definition number="20.2" title="K、T、S4、S5">
+**正规模态逻辑 K** 包含：
+
+- 所有命题重言式；
+- K 公理：$\Box(\varphi\to\psi)\to(\Box\varphi\to\Box\psi)$；
+- 分离规则；
+- 必然化规则：从 $\varphi$ 推出 $\Box\varphi$。
+
+在 K 上加入不同公理，得到不同系统：
+
+- **T**：$\Box\varphi\to\varphi$；对应自反框架。
+- **S4**：T 加 $\Box\varphi\to\Box\Box\varphi$；对应自反且传递框架。
+- **S5**：S4 加 $\Diamond\varphi\to\Box\Diamond\varphi$；对应等价关系框架。
+</Definition>
+
+<Theorem number="20.1" title="K 的可靠性">
+K 的所有定理在所有 Kripke 框架中有效。
+</Theorem>
+
+<Proof>
+对证明长度归纳。重言式在所有世界为真；K 公理的有效性：若 $w$ 满足 $\Box(\varphi\to\psi)$ 与 $\Box\varphi$，则每个可达 $v$ 满足 $\varphi\to\psi$ 与 $\varphi$，所以满足 $\psi$；因此 $w$ 满足 $\Box\psi$。分离规则保持有效性。必然化规则：若 $\varphi$ 在所有框架的所有世界为真，则 $\Box\varphi$ 也在所有世界为真。归纳完成。
+</Proof>
+
+**对应理论**：框架性质与模态公理之间有系统联系。例如：
+
+- T 对应自反性：若 $R$ 自反，则 $\Box\varphi\to\varphi$ 有效；反过来，若 T 在所有框架上有效，则 $R$ 自反。
+- S4 对应自反 + 传递。
+- S5 对应等价关系。
+
+对应不是一一翻译：有些模态公式对应二阶性质，有些框架性质没有模态对应。模态逻辑的“对应理论”研究的就是这张地图。
+
+## 哲学争议
+
+- **可能世界是什么？** Lewis 的模态实在论认为其他世界真实存在；多数哲学家只把可能世界当作模型或抽象表示。
+- **必然性是形而上学的还是逻辑的？** 逻辑必然、形而上学必然、物理必然、道义必然有不同的可达关系；S5 不是“唯一的必然逻辑”。
+- **de re 与 de dicto**：$\Box\exists x\,P(x)$ 与 $\exists x\,\Box P(x)$ 不同；前者说“必然存在某个 P”，后者说“存在一个必然为 P 的对象”。量化模态逻辑需要处理跨世界同一性，这会引出本质主义争论。
+
+## 替代方案与冗余分析
+
+- **代数语义**：用布尔代数与算子解释模态，适合证明完备性；Kripke 语义更直观。
+- **邻域语义**：允许每个世界有一族“必然邻域”，能刻画非正规模态逻辑；Kripke 语义是它的特例。
+- **时态逻辑**：把可达关系解释为时间先后；$\Box$ 读作“将来总是”，$\Diamond$ 读作“将来某时”。
+- **把 S5 当成唯一正确逻辑**：只有在特定哲学假设下才成立；不同模态需要不同系统。
+
+## 习题
+
+<Exercise number="20.1" title="K 公理">
+证明 K 公理 $\Box(p\to q)\to(\Box p\to\Box q)$ 在所有框架中有效。
+</Exercise>
+
+<Exercise number="20.2" title="自反性">
+找出一个框架，使 $\Box p\to p$ 失败；再说明为什么自反框架使它有效。
+</Exercise>
+
+<Exercise number="20.3" title="时态读法">
+在时态逻辑中，$\Box\Diamond p$ 与 $\Diamond\Box p$ 分别读作什么？它们是否等价？
+</Exercise>
+
+<Exercise number="20.4" title="开放题">
+可能世界语义是在“解释”必然，还是只是在“建模”必然？请给出你的理由。
+</Exercise>
+
+<Hint>第 20.1 题按 $\Box$ 的语义逐世界展开。第 20.2 题取一个没有自反边的世界。</Hint>
+
+## 自学检查单
+
+- 我能写出 Kripke 框架与模型的定义吗？
+- 我能解释 $\Box$ 与 $\Diamond$ 的量词结构吗？
+- 我知道 T、S4、S5 对应的框架性质吗？
+- 我能区分 de re 与 de dicto 吗？
+- 我是否把 Kripke 语义当成了形而上学承诺？
+
+## 本章核对来源
+
+- Priest, *An Introduction to Non-Classical Logic*, 2nd ed., 第 2–3 章：模态逻辑与 Kripke 语义。
+- Blackburn–de Rijke–Venema, *Modal Logic*, 第 1–2 章：正规模态系统与对应理论。
+- Beall–van Fraassen, *Possibilities and Paradox*：模态逻辑的哲学动机。
+- Open Logic Project, *Boxes and Diamonds*：模态逻辑的语义与完备性导论。
+- 完备性的典范模型证明未展开；本篇展开可靠性、对应与哲学边界。

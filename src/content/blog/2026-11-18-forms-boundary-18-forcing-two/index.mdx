@@ -1,0 +1,126 @@
+---
+title: "力迫 II：CH 的独立性与模型视角"
+pubDate: 2026-11-18
+description: "用 Cohen 力迫加入 ℵ₂ 个新实数，证明 CH 在扩张模型中失败；结合 L，得到 CH 相对 ZFC 的独立性。"
+tags: ["元数学", "集合论", "力迫", "独立性"]
+series: "forms-boundary"
+seriesPart: 3
+seriesOrder: 18
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 15–17 篇：基数、CH、L、力迫偏序、generic filter、名字与 truth lemma。
+- 可数传递模型、ccc（可数反链条件）的直观概念。
+
+## 本篇新术语
+
+- **Cohen 力迫**：用有限部分函数加入新实数的力迫偏序。
+- **Cohen 实数**：Cohen 力迫的 generic filter 所解释出的新实数。
+- **ccc**：每个反链都可数的偏序性质。
+- **基数保持**：扩张模型与原模型有相同的基数。
+- **独立性**：ZFC 既不能证明也不能反驳某个句子。
+
+## 问题：怎样让 CH 失败？
+
+第 16 篇的 $L$ 让 CH 成立。要证明 CH 独立，还需要一个 CH 失败的模型。直观上，我们希望加入至少 $\aleph_2$ 个新实数；但直接加入可能把 $\aleph_1$ 或 $\aleph_2$ 压小，破坏基数。
+
+Cohen 力迫的精妙之处是：它加入很多新实数，同时保持所有基数。保持基数的技术条件是 **ccc**：每个反链可数。满足 ccc 的力迫不会把正则基数压小，因此 $\aleph_1$ 与 $\aleph_2$ 在扩张中仍然是原来的基数。
+
+<Definition number="18.1" title="Cohen 力迫">
+令 $\mathbb{P}=\mathrm{Fn}(\omega_2\times\omega,2)$ 为所有有限部分函数 $p:\omega_2\times\omega\rightharpoonup 2$，按反包含排序：$p\le q$ 当且仅当 $p\supseteq q$（$p$ 给出更多信息）。
+
+一个 $M$-generic filter $G$ 给出一个函数
+
+$$
+f_G:\omega_2\times\omega\to 2,\qquad f_G(\alpha,n)=i \text{ 当且仅当某个 } p\in G \text{ 满足 } p(\alpha,n)=i.
+$$
+
+对每个 $\alpha<\omega_2$，$n\mapsto f_G(\alpha,n)$ 是一个新实数，称为 Cohen 实数。
+</Definition>
+
+<Metaphor title="在模型外面加房间" breaking="力迫不是在一个固定宇宙里‘扩建’；它构造一个新的模型 M[G]，generic 对象通常在 M 外。ccc 也不是‘房间不会挤坏’的物理保证，而是反链可数的组合条件。">
+把 Cohen 力迫想成在模型外接出一排新房间：每个条件是一张局部的施工图，generic filter 把所有局部图拼成完整的新楼层。这个比喻能说明“逐步加入信息”，但不能说明模型论上的新模型：$M[G]$ 不是 $M$ 的内部改造。
+</Metaphor>
+
+<Theorem number="18.1" title="Cohen 力迫是 ccc">
+$\mathrm{Fn}(\omega_2\times\omega,2)$ 满足 ccc：每个反链都是可数的。
+</Theorem>
+
+<Proof sketch>
+用 Δ-系统引理。取不可数多个有限部分函数，它们的定义域有不可数多个；由 Δ-系统引理，可找到不可数子族，其定义域有共同的“根”，根外两两不交。若两个条件在根外不交且兼容，就能合并；因此同一子族中任意两个条件兼容，不能构成反链。所以不存在不可数反链。细节是 Δ-系统引理的组合论证，此处只给骨架。
+</Proof>
+
+<Theorem number="18.2" title="CH 在 Cohen 扩张中失败">
+设 $M$ 是 ZFC 的可数传递模型，$G$ 是 Cohen 力迫的 $M$-generic filter。则在 $M[G]$ 中，$2^{\aleph_0}\ge\aleph_2$，因此 CH 失败。
+</Theorem>
+
+<Proof sketch>
+对每个 $\alpha<\omega_2$，$f_G(\alpha,\cdot)$ 是一个实数。若 $\alpha\ne\beta$，则 $f_G(\alpha,\cdot)$ 与 $f_G(\beta,\cdot)$ 不同：取一个足够强的条件同时决定某个 $n$ 上的不同值，稠密性保证这样的条件存在。因此 $M[G]$ 中至少有 $\aleph_2$ 个实数。
+
+由于 Cohen 力迫 ccc，$\omega_2$ 在 $M[G]$ 中仍是基数（ccc 保持基数），所以“至少 $\aleph_2$ 个实数”在 $M[G]$ 中成立。CH 说 $2^{\aleph_0}=\aleph_1$，与 $2^{\aleph_0}\ge\aleph_2$ 矛盾。因此 $M[G]\models\neg\mathrm{CH}$。
+</Proof>
+
+这里有一个技术细节：`$2^{\aleph_0}\ge\aleph_2$` 中的 $\aleph_2$ 是 $M[G]$ 中的基数，而 ccc 保证它和 $M$ 中的 $\omega_2$ 一致。若不做基数保持，扩张可能把 $\omega_2$ 变成可数，结论就会失效。ccc 正是防止这种塌缩的条件。
+
+## 独立性
+
+<Theorem number="18.3" title="CH 独立于 ZFC">
+若 ZFC 一致，则 CH 与 $\neg$CH 都各自与 ZFC 一致。因此 CH 在 ZFC 中不可判定。
+</Theorem>
+
+<Proof>
+- 由第 16 篇，若 ZFC 一致，则 $L$ 给出 ZFC+CH 的模型。
+- 由定理 18.2，从 ZFC 的模型出发做 Cohen 扩张，得到 ZFC+$\neg$CH 的模型。
+- 两个方向合起来：ZFC 既不能证明 CH，也不能证明 $\neg$CH。
+</Proof>
+
+严格地说，Cohen 扩张通常从可数传递模型出发；可数传递模型的存在性强于 ZFC 的一致性（它等价于 ZFC 有良基模型）。为了把结果化为纯一致性陈述，可以用力迫关系的语法版本或布尔值模型，避免直接假设可数传递模型。本篇的模型论证是直观版本；技术上的相对一致性结论仍然成立。
+
+<Metaphor title="独立性是‘两座城都存在’" breaking="独立性不是说 CH 既真又假；它说 ZFC 的公理不足以决定 CH。在具体的模型里，CH 仍有确定的真值；只是 ZFC 不能统一地判定它。">
+把 ZFC 想成一套建筑规范，CH 想成“城市里最多只有 $\aleph_1$ 条街道”。独立性说：按这套规范，可以建出满足它的城市，也可以建出不满足它的城市；规范本身不决定这一条。这个比喻能说明“不可判定”，但不能说明“CH 没有真值”。
+</Metaphor>
+
+## 替代方案与冗余分析
+
+- **只做 L**：证明 CH 不能被反驳，但不能证明 CH 不能被证明；需要力迫补上另一半。
+- **只做力迫**：证明 CH 不能被证明，但如果没有 L，就缺少 CH 一致的方向。
+- **布尔值模型**：避免 generic filter 的存在性技术问题，适合严格的相对一致性证明。
+- **把独立性当成“随便选”**：独立性只说明 ZFC 不决定；新公理、哲学立场与实践需求仍可能给出选择理由。
+
+## 习题
+
+<Exercise number="18.1" title="ccc 与基数">
+用自己的话解释：为什么 ccc 力迫不会把 $\omega_1$ 压成可数？
+</Exercise>
+
+<Exercise number="18.2" title="Cohen 实数">
+为什么不同的 $\alpha$ 给出不同的 Cohen 实数？请用稠密性说明。
+</Exercise>
+
+<Exercise number="18.3" title="独立性两半">
+CH 独立性证明的两半分别由什么模型给出？如果只做其中一半，会得到什么结论？
+</Exercise>
+
+<Exercise number="18.4" title="开放题">
+CH 在 ZFC 中不可判定。你认为这是否意味着“CH 没有唯一答案”？请区分“ZFC 不能判定”与“数学上没有真理”。
+</Exercise>
+
+<Hint>第 18.1 题用 ccc 保持正则基数。第 18.2 题找一个条件强制两个坐标在某个 $n$ 上不同。</Hint>
+
+## 自学检查单
+
+- 我能定义 Cohen 力迫与 Cohen 实数吗？
+- 我知道 ccc 为什么能保持基数吗？
+- 我能说明 CH 独立性证明的两半吗？
+- 我知道独立性不等于“没有真值”吗？
+- 我是否把可数传递模型的技术假设当成了 ZFC 的定理？
+
+## 本章核对来源
+
+- Kunen, *Set Theory: An Introduction to Independence Proofs*, 第 7–8 章：Cohen 力迫与 CH 独立性。
+- Jech, *Set Theory*, 第 14 章：ccc 与基数保持。
+- Open Logic Project, *Sets, Logic, Computation*：力迫与独立性导论。
+- ccc 的 Δ-系统论证与基数保持细节标为证明骨架；CH 失败的核心论证展开。

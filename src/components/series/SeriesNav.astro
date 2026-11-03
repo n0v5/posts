@@ -1,0 +1,33 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  prev: CollectionEntry<'blog'> | null;
+  next: CollectionEntry<'blog'> | null;
+  seriesTitle: string;
+}
+
+const { prev, next, seriesTitle } = Astro.props;
+const baseUrl = import.meta.env.BASE_URL;
+---
+
+<nav class="series-nav" aria-label={`${seriesTitle}系列导航`}>
+  <div class="series-nav-side">
+    {
+      prev ? (
+        <a href={`${baseUrl}${prev.id}/`}>← {prev.data.title}</a>
+      ) : (
+        <span class="series-nav-placeholder">系列起点</span>
+      )
+    }
+  </div>
+  <div class="series-nav-side series-nav-next">
+    {
+      next ? (
+        <a href={`${baseUrl}${next.id}/`}>{next.data.title} →</a>
+      ) : (
+        <span class="series-nav-placeholder">系列终点</span>
+      )
+    }
+  </div>
+</nav>

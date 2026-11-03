@@ -1,0 +1,101 @@
+---
+title: "真理理论与语义悖论：Tarski、Kripke、Field"
+pubDate: 2026-11-24
+description: "从说谎者悖论出发，比较 Tarski 的语言分层、Kripke 的不动点真理与 Field 的次完全真理，说明‘真’为什么不能是一个简单的谓词。"
+tags: ["逻辑", "哲学逻辑", "真理理论", "悖论"]
+series: "forms-boundary"
+seriesPart: 4
+seriesOrder: 24
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 10–11 篇：Gödel 编码、对角线引理、Tarski 不可定义性。
+- 第 22–23 篇：多值逻辑、真值间隙、次协调逻辑。
+
+## 本篇新术语
+
+- **真谓词**：表达“某个句子为真”的谓词 $Tr(x)$。
+- **T-模式**：$Tr(\ulcorner\varphi\urcorner)\leftrightarrow\varphi$。
+- **语义悖论**：由真谓词与自指产生的矛盾，如说谎者。
+- **不动点**：Kripke 真理理论中，真谓词外延在单调算子下稳定下来的点。
+- **次完全真理**：Field 的真理理论，保留 T-模式但放弃排中律。
+- **报复悖论**：针对某个真理理论构造的新悖论，说明该理论仍未捕捉“真”。
+
+## 问题：真理能不能被一个谓词抓住？
+
+Tarski 的 T-模式看起来是真理的最低要求：句子“雪是白的”为真，当且仅当雪是白的。但把 $Tr(x)$ 放进同一个语言，并允许自指，就会得到说谎者：
+
+$$
+\lambda\leftrightarrow\neg Tr(\ulcorner\lambda\urcorner).
+$$
+
+若 $Tr$ 满足 T-模式，则 $Tr(\ulcorner\lambda\urcorner)\leftrightarrow\lambda$；与上式合并得 $\lambda\leftrightarrow\neg\lambda$，矛盾。第 11 篇已经用对角线引理证明：在足够强的算术理论中，不存在这样的 $Tr$。
+
+## Tarski：语言分层
+
+Tarski 的解决方案是分层：对象语言 $\mathcal{L}_0$ 不能定义自己的真理谓词；在元语言 $\mathcal{L}_1$ 中定义 $\mathcal{L}_0$ 的真理谓词；$\mathcal{L}_1$ 的真理谓词又在更高的元语言中定义。没有“普遍真理谓词”能同时适用于所有层次。
+
+这解决了说谎者，但代价是：自然语言似乎没有一个固定的对象语言/元语言分层；我们日常说的“真”好像是统一的。Tarski 的层级是技术上的成功，也是哲学上的争议点。
+
+## Kripke：部分真理与不动点
+
+Kripke 的思路是：真谓词不必一开始就对所有句子有定义。从一个“真”外延为空、假外延为空的初始模型开始，逐步把已经确定的真/假句子加入；用一个单调算子表示“根据已有信息，哪些句子可以被判定为真/假”。迭代到不动点，得到一个部分解释：有些句子为真，有些为假，有些未定义。
+
+说谎者 $\lambda$ 在这个构造中不会被判定为真或假；它落在真值间隙里。这样不会产生矛盾，但代价是：排中律不适用于含真谓词的句子；有些句子既不真也不假。
+
+<Metaphor title="真理是一面镜子" breaking="真谓词不是世界的镜子，而是语言内部的一个装置；Kripke 的不动点也不是‘最终真理’，而是一个部分模型。镜子会反射，但真谓词只在语言允许的范围内工作。">
+把真谓词想成一面镜子：句子照进去，镜子告诉你它是否为真。这个比喻能说明 T-模式，但不能说明分层与间隙：镜子本身也可能在语言之外，或者对某些句子没有成像。
+</Metaphor>
+
+## Field：次完全真理
+
+Field 试图保留 T-模式，同时避免说谎者。他使用次完全逻辑（paracomplete）：排中律不普遍成立，但 T-模式对每个句子都成立。说谎者句 $\lambda$ 与 $\neg Tr(\ulcorner\lambda\urcorner)$ 等价；在次完全语义下，这不会推出矛盾，而是使 $\lambda$ 处于“不确定”状态。
+
+代价是：经典推理的一些规则失效；真理理论需要非经典逻辑；而且会出现**报复悖论**——用理论自己的资源构造新的悖论，说明理论仍不能完全捕捉“真”。Field 用确定性算子与限制性语义回应，但争论仍在继续。
+
+## 替代方案与冗余分析
+
+- **Tarski 分层**：技术清晰，适合形式语言；代价是缺乏统一真理谓词。
+- **Kripke 不动点**：保留经典逻辑，但真谓词部分定义；代价是排中律失效于含真句子。
+- **Field 次完全**：保留 T-模式，放弃排中律；代价是经典推理受限与报复悖论。
+- **次协调真理**：允许说谎者为真且假，放弃爆炸；代价是接受矛盾。
+- **紧缩论**：真理是断言/概括的语言装置，不是实质属性；它需要解释 T-模式与悖论。
+
+## 习题
+
+<Exercise number="24.1" title="说谎者">
+写出说谎者句 $\lambda$，并说明它与 Gödel 句的区别：一个涉及真，一个涉及可证。
+</Exercise>
+
+<Exercise number="24.2" title="Tarski 分层">
+为什么对象语言不能定义自己的真理谓词？如果强行定义，会得到什么矛盾？
+</Exercise>
+
+<Exercise number="24.3" title="Kripke 间隙">
+在 Kripke 的不动点构造中，说谎者句处于什么状态？为什么这不是矛盾？
+</Exercise>
+
+<Exercise number="24.4" title="开放题">
+如果“真”不能由一个统一谓词捕捉，日常语言中的“真”还剩下什么？请从紧缩论与实质真理论各给一个回答。
+</Exercise>
+
+<Hint>第 24.1 题把 $\lambda$ 写成“我不是真的”。第 24.3 题注意部分解释允许未定义。</Hint>
+
+## 自学检查单
+
+- 我能写出 T-模式与说谎者句吗？
+- 我知道 Tarski 分层解决了什么、牺牲了什么吗？
+- 我能解释 Kripke 不动点的基本思想吗？
+- 我知道 Field 的次完全真理保留了 T-模式但放弃了什么吗？
+- 我是否能区分“真值间隙”与“矛盾为真”？
+
+## 本章核对来源
+
+- Tarski, “The Semantic Conception of Truth” 与 “The Concept of Truth in Formalized Languages”（概念核对，不引页码）。
+- Kripke, “Outline of a Theory of Truth”, *Journal of Philosophy* 72 (1975)：不动点构造。
+- Field, *Saving Truth from Paradox*：次完全真理与报复悖论。
+- Stanford Encyclopedia of Philosophy, “The Liar Paradox” 与 “Truth”：理论地图。
+- Kripke 不动点与 Field 语义的完整技术细节标为骨架；本篇展开悖论结构与理论比较。

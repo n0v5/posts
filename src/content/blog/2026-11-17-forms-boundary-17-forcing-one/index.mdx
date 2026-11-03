@@ -1,0 +1,145 @@
+---
+title: "力迫 I：generic extension 与 truth lemma"
+pubDate: 2026-11-17
+description: "从可数传递模型出发，定义力迫偏序、稠密集、generic filter、名字与 generic extension，并陈述 truth lemma 的机制。"
+tags: ["元数学", "集合论", "力迫", "独立性"]
+series: "forms-boundary"
+seriesPart: 3
+seriesOrder: 17
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 13–16 篇：ZFC、序数、基数、CH、内模型 L。
+- 偏序、滤子、可数模型、传递模型。
+
+## 本篇新术语
+
+- **力迫偏序**：用来表示“部分信息”的偏序集。
+- **稠密集**：与每个条件都有更强扩展的条件集合。
+- **generic filter**：与模型内每个稠密集都相交的滤子。
+- **名字**：在扩张模型中用来指称新对象的符号。
+- **generic extension**：用 generic filter 解释名字得到的新模型。
+- **truth lemma**：把“条件力迫某公式”与“所有包含该条件的 generic extension 中公式为真”对应起来。
+
+## 问题：怎样在不破坏 ZFC 的前提下加入新集合？
+
+$L$ 给出了 CH 成立的内模型。要证明 CH 独立，我们需要一个 CH 失败、但仍满足 ZFC 的模型。直接“加入所有实数”会破坏基数；力迫法的做法是：只加入一个**generic**的新对象，它避开模型内所有可以被避开的限制，同时保持基数。
+
+技术上，我们从可数传递模型 $M$ 出发。$M$ 是集合，不是真类；可数性让我们能枚举 $M$ 中的稠密集，并构造一个与它们都相交的 filter。这个 filter 通常不在 $M$ 中；它给出 $M$ 的一个扩张 $M[G]$。
+
+<Definition number="17.1" title="力迫偏序与 generic filter">
+设 $(\mathbb{P},\le)\in M$ 是偏序集；约定 $p\le q$ 表示 $p$ 比 $q$ 更强（给出更多信息）。
+
+- $D\subseteq\mathbb{P}$ 是**稠密**的，若对每个 $p\in\mathbb{P}$，存在 $q\in D$ 使 $q\le p$。
+- $G\subseteq\mathbb{P}$ 是**滤子**，若 $p\in G$ 且 $p\le q$ 蕴含 $q\in G$，且 $G$ 中任意两个条件有共同的更强扩展在 $G$ 中。
+- $G$ 是 **$M$-generic** 的，若 $G$ 与每个属于 $M$ 的稠密集相交。
+</Definition>
+
+<Metaphor title="从外部挑选一个不碰任何稠密集的点" breaking="generic filter 不是在 M 内部构造出来的；它的存在依赖 M 可数，并且它通常不属于 M。它也不是随机抽样，而是满足所有稠密性约束的数学对象。">
+把力迫条件想成“部分信息”，稠密集想成“必须被满足的测试”。generic filter 是一个把信息补全、并绕过所有测试的对象。这个比喻能说明“避开限制”，但不能说明它在模型外：generic 对象不是 M 的内部成员。
+</Metaphor>
+
+## generic filter 的存在
+
+<Theorem number="17.1" title="generic 存在">
+设 $M$ 是可数传递模型，$\mathbb{P}\in M$，$p\in\mathbb{P}$。则存在 $M$-generic filter $G\subseteq\mathbb{P}$，使 $p\in G$。
+</Theorem>
+
+<Proof>
+由于 $M$ 可数，枚举 $M$ 中所有稠密集为 $D_0,D_1,D_2,\dots$。令 $p_0=p$。对每个 $n$，因 $D_n$ 稠密，取 $p_{n+1}\le p_n$ 且 $p_{n+1}\in D_n$。令
+
+$$
+G=\{q\in\mathbb{P}:\exists n\,(p_n\le q)\}.
+$$
+
+则 $G$ 是滤子：若 $p_n\le q$ 且 $q\le r$，则 $p_n\le r$，所以 $r\in G$；若 $p_m\le q$、$p_n\le r$，取 $\max(m,n)$ 对应的 $p_k$，它同时强于 $q,r$，所以 $G$ 有共同扩展。并且 $G$ 与每个 $D_n$ 相交，因为 $p_{n+1}\in D_n$ 且 $p_{n+1}\in G$。因此 $G$ 是 $M$-generic，且 $p=p_0\in G$。
+</Proof>
+
+这个证明用到可数性来枚举稠密集。若 $M$ 不可数，$M$ 内的稠密集可能多到无法用 $\omega$ 序列逐一满足；这时需要更强的技术（布尔值模型或超限构造）。
+
+## 名字与解释
+
+<Definition number="17.2" title="名字与 generic extension">
+在 $M$ 中递归定义**名字**：一个名字 $\tau$ 是形如 $(\sigma,p)$ 的集合，其中 $\sigma$ 是名字、$p\in\mathbb{P}$。
+
+给定 $M$-generic $G$，定义名字的解释
+
+$$
+\tau^G=\{\sigma^G:\exists p\in G\,(\sigma,p)\in\tau\}.
+$$
+
+令 $M[G]=\{\tau^G:\tau\in M\text{ 是名字}\}$。直观上，名字是“可能对象的蓝图”，$G$ 决定哪些条件被实现，从而决定蓝图的最终外延。
+</Definition>
+
+**易错边界**：名字不是对象本身；同一个名字在不同 generic filter 下可能解释出不同集合。$\tau^G$ 依赖 $G$，而 $G$ 通常不在 $M$ 中。
+
+## truth lemma
+
+<Theorem number="17.2" title="truth lemma（陈述）">
+设 $p\in\mathbb{P}$，$\varphi(x_1,\dots,x_n)$ 是公式，$\tau_1,\dots,\tau_n$ 是名字。则
+
+$$
+p\Vdash\varphi(\tau_1,\dots,\tau_n)
+$$
+
+当且仅当对所有 $M$-generic $G$ 且 $p\in G$，都有 $M[G]\models\varphi(\tau_1^G,\dots,\tau_n^G)$。
+</Theorem>
+
+<Proof sketch>
+对公式结构做归纳。原子公式用名字的解释与 $G$ 的滤子性质；否定与连接词由归纳假设和“稠密集决定公式”的论证得到；量词情形需要为存在公式构造一个名字见证，并用稠密性保证见证在某个 generic extension 中出现。关键的技术点是：力迫关系 $p\Vdash\varphi$ 必须能在 $M$ 内部定义，否则无法在 $M$ 中讨论它。这个定义通过递归与“所有 generic 扩张”的语义条件给出，细节属于力迫的技术核心。
+
+truth lemma 的完整证明需要同时处理“定义在 M 内”与“语义对应”两个方向；此处只给归纳骨架与关键见证构造。
+</Proof>
+
+<Theorem number="17.3" title="generic extension 满足 ZFC">
+若 $M$ 是 ZFC 的可数传递模型，$G$ 是 $M$-generic，则 $M[G]$ 是 ZFC 的传递模型，且 $M\subseteq M[G]$。
+</Theorem>
+
+<Proof sketch>
+逐条验证 ZFC 公理。传递性由名字的解释递归得到；配对、并集、幂集等在 $M[G]$ 中用名字构造；分离与替换用 truth lemma 与 $M$ 中的替换公理；基础由 $M[G]$ 是传递集合且 $\in$ 良基得到。完整验证需要大量名字操作，属于技术骨架。
+</Proof>
+
+## 替代方案与冗余分析
+
+- **布尔值模型**：用布尔代数代替二值 generic filter，避免“generic 不存在于 M 中”的技术麻烦；它与力迫等价。
+- **语法力迫**：只用力迫关系与一致性，不构造具体模型；适合证明独立性。
+- **超积**：另一种构造模型的方法，适合紧致性与模型论，但不直接给出 CH 独立性。
+- **把 generic 当成随机对象**：generic 不是随机抽样；它满足所有稠密性约束，通常不可定义。
+
+## 习题
+
+<Exercise number="17.1" title="稠密与 generic">
+证明：若 $G$ 是 $M$-generic，$D\in M$ 稠密，则 $G\cap D\ne\emptyset$。
+</Exercise>
+
+<Exercise number="17.2" title="可数性">
+generic 存在定理的证明在哪一步使用 $M$ 可数？如果 $M$ 不可数，枚举会出什么问题？
+</Exercise>
+
+<Exercise number="17.3" title="名字">
+解释名字与对象的关系。为什么同一个名字在不同 generic filter 下可能解释出不同集合？
+</Exercise>
+
+<Exercise number="17.4" title="开放题">
+generic filter 通常不在 $M$ 中。这是否意味着 $M[G]$ 是“虚构的”？请从模型论角度回答。
+</Exercise>
+
+<Hint>第 17.1 题用定义直接展开。第 17.2 题注意稠密集的枚举需要一个可数序列。第 17.3 题把名字想成带条件的蓝图。</Hint>
+
+## 自学检查单
+
+- 我能定义力迫偏序、稠密集与 generic filter 吗？
+- 我能复述 generic 存在定理的构造吗？
+- 我知道名字与解释的区别吗？
+- 我能陈述 truth lemma 的两个方向吗？
+- 我是否把 generic 当成了 $M$ 内部可构造的对象？
+
+## 本章核对来源
+
+- Kunen, *Set Theory: An Introduction to Independence Proofs*, 第 7 章：力迫与 generic extension。
+- Jech, *Set Theory*, 第 14 章：力迫关系与 truth lemma。
+- Open Logic Project, *Sets, Logic, Computation*：力迫导论章节。
+- truth lemma 与 $M[G]\models\mathrm{ZFC}$ 的完整名字操作标为证明骨架；generic 存在定理完整展开。

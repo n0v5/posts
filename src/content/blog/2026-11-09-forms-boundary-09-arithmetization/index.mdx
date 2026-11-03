@@ -1,0 +1,144 @@
+---
+title: "算术化：Gödel 编码与可表示性"
+pubDate: 2026-11-09
+description: "把符号、公式与证明编码成自然数，定义原始递归与 Σ₁ 可定义性，证明可表示性定理与对角线引理，为不完备性做好准备。"
+tags: ["元数学", "逻辑", "可计算性", "不完备性"]
+series: "forms-boundary"
+seriesPart: 2
+seriesOrder: 9
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 7–8 篇：Turing 机、可计算函数、可枚举性、停机问题。
+- 第 1–4 篇：一阶语言、证明系统、一致性与完备性。
+- 自然数的加乘、素数分解、有限序列的编码。
+
+## 本篇新术语
+
+- **Gödel 编码**：把符号、公式、证明等语法对象映射为自然数的可计算编码。
+- **原始递归函数**：由零、后继、投影、复合与原始递归生成的可计算函数。
+- **Σ₁ 公式**：形如“存在一个见证，使某个可判定关系成立”的算术公式。
+- **可表示性**：算术理论能用公式准确表达某个可计算关系。
+- **对角线引理**：每个一元公式都能构造出一个谈论自身编码的句子。
+
+## 问题：算术如何谈论自己的语法？
+
+Gödel 的关键一步不是发明更复杂的逻辑，而是把“符号串”变成“数”。一旦公式和证明都有编号，算术就能谈论“$x$ 是 $y$ 的证明”“$y$ 是可证的”这类语法事实。
+
+这不是把语法偷换成语义，而是建立一层可计算的翻译：语法对象 → 自然数 → 算术公式。翻译必须足够机械，才能在算术内部被表示；否则我们只是换了一种说法。
+
+<Definition number="9.1" title="Gödel 编码">
+给一阶语言的每个符号分配一个自然数，再用配对函数把有限序列编码为单个自然数。常用做法是：若 $a_0,\dots,a_{n-1}$ 是符号编号，用素数幂乘积
+
+$$
+2^{a_0+1}\cdot 3^{a_1+1}\cdots p_{n-1}^{a_{n-1}+1}
+$$
+
+编码这个序列，其中 $p_i$ 是第 $i$ 个素数。公式是符号序列，证明是公式序列，因此都可以编码为自然数。公式 $\varphi$ 的编码记作 $\ulcorner\varphi\urcorner$。
+</Definition>
+
+这个编码有两个关键性质：**可计算**与**可解码**。给定符号串能算出编号；给定编号能恢复符号串（或判断它不是合法编码）。此外，判断“某个数是不是公式的编码”“某个数是不是证明的编码”都是原始递归的。
+
+<Definition number="9.2" title="原始递归与 Σ₁">
+**原始递归函数**从零函数、后继函数、投影函数出发，经复合与原始递归封闭得到。直观上，它们是用固定次数的循环能算出的函数。
+
+一个关系是**原始递归**的，若其特征函数原始递归。一个公式是 **Σ₁** 的，若它形如 $\exists x\,\theta$，其中 $\theta$ 是原始递归关系（更一般地，是有界量词公式）的图形。
+</Definition>
+
+Σ₁ 公式表达“存在一个可检查的见证”。例如“存在一个数编码了 $\varphi$ 的证明”就是 Σ₁：见证是一个具体证明，检查它是否合法只需要有限步。
+
+<Metaphor title="给每个符号发身份证号" breaking="编号不是意义，也不是真值；它只是让语法对象可以被算术操作。不同编码方案会给出不同编号，但可表示性的结论不依赖具体方案。">
+把 Gödel 编码想成给每个符号、公式、证明发一个身份证号。算术可以通过号码谈论它们，就像数据库可以通过主键找到记录。这个比喻能说明“语法可被算术指称”，但不能说明“号码本身证明了什么”。
+</Metaphor>
+
+**易错边界**：编码不是把公式变成真理。$\ulcorner\varphi\urcorner$ 是一个自然数，不是公式的意义；$\varphi$ 与 $\ulcorner\varphi\urcorner$ 属于不同层次。把两者混同，是后面误读 Gödel 定理的常见根源。
+
+## 可表示性
+
+<Definition number="9.3" title="可表示性">
+设 $T$ 是算术理论。一个关系 $R\subseteq\mathbb{N}^n$ 在 $T$ 中**可表示**，若存在公式 $\varphi(x_1,\dots,x_n)$，使得对任意 $a_1,\dots,a_n$：
+
+- 若 $R(a_1,\dots,a_n)$ 成立，则 $T\vdash\varphi(\overline{a_1},\dots,\overline{a_n})$；
+- 若 $R(a_1,\dots,a_n)$ 不成立，则 $T\vdash\neg\varphi(\overline{a_1},\dots,\overline{a_n})$。
+
+其中 $\overline{a}$ 是 $a$ 对应的数码项。函数可表示，若它的图像可表示，且 $T$ 能证明对应输出存在且唯一。
+</Definition>
+
+<Theorem number="9.1" title="原始递归可表示">
+每个原始递归函数与原始递归关系都在 Robinson 算术 $Q$ 中可表示；每个可计算函数都在 $Q$ 中 Σ₁ 可定义。
+</Theorem>
+
+<Proof sketch>
+对原始递归的生成过程做归纳。零、后继与投影容易表示；复合直接拼接公式；原始递归用有界搜索与归纳定义表示。关键是把“递归调用有限次”翻译成算术中的存在量词与有界量词。$Q$ 虽弱，但足以证明这些局部事实。一般可计算函数通过 Turing 机的格局序列编码，存在量词表示“存在一个停机计算历史”，其检查是原始递归的。细节属于编码构造的机械部分，此处只给骨架。
+</Proof>
+
+这个定理是算术化的支点：**语法操作是可计算的，因此可在算术中表示**。没有它，`Prov_T(x)` 就只是一个元语言缩写，无法进入对象语言。
+
+## 对角线引理
+
+<Theorem number="9.2" title="对角线引理">
+对任意只有一个自由变量的一元公式 $\varphi(x)$，存在一个句子 $G$，使得
+
+$$
+Q\vdash G\leftrightarrow\varphi(\ulcorner G\urcorner).
+$$
+</Theorem>
+
+<Proof>
+定义一个原始递归函数 $\mathrm{diag}$：若 $n$ 是某个一元公式 $\psi(x)$ 的编码，则 $\mathrm{diag}(n)$ 是句子 $\psi(\overline{n})$ 的编码；否则令 $\mathrm{diag}(n)=0$。$\mathrm{diag}$ 是可计算的，因此可在 $Q$ 中表示。
+
+令 $\psi(x)$ 是公式 $\varphi(\mathrm{diag}(x))$，令 $m=\ulcorner\psi\urcorner$，再令 $G$ 是句子 $\psi(\overline{m})$。按 $\mathrm{diag}$ 的定义，
+
+$$
+\ulcorner G\urcorner=\mathrm{diag}(m)=\ulcorner\psi(\overline{m})\urcorner.
+$$
+
+而 $G=\psi(\overline{m})=\varphi(\mathrm{diag}(\overline{m}))$。由于 $\mathrm{diag}(m)=\ulcorner G\urcorner$，把 $\ulcorner G\urcorner$ 看作对应数码项的缩写，便得到 $G$ 与 $\varphi(\ulcorner G\urcorner)$ 在 $Q$ 中可证等价。因此在 $Q$ 中可证 $G\leftrightarrow\varphi(\ulcorner G\urcorner)$。
+</Proof>
+
+这个证明的妙处是：$G$ 没有字面上包含自己，它通过编码与 $\mathrm{diag}$ 得到自己的编号。自指是**固定点**，不是循环定义；编码函数把“谈论自己”变成一个普通的算术等式。
+
+## 替代方案与冗余分析
+
+- **不用编码**：只能在元语言里说“可证”，无法让算术谈论自身；Gödel 定理无从表述。
+- **用非标准编码**：只要编码/解码可计算、可表示，结论不变；具体编号不影响定理。
+- **把 Σ₁ 与可计算混为一谈**：Σ₁ 是公式形状，可计算是函数性质；它们通过可表示性连接，但不是同一个概念。
+- **跳过可表示性直接证 Gödel**：会留下最大的一步空白；对角线引理本身也需要可表示性。
+
+## 习题
+
+<Exercise number="9.1" title="编码的可计算性">
+为什么 Gödel 编码必须是可计算、可解码的？如果编码不可解码，后面的证明会在哪一步失败？
+</Exercise>
+
+<Exercise number="9.2" title="Σ₁ 形状">
+把“$x$ 是某个公式的证明的编码”写成 Σ₁ 公式的形状，并指出见证是什么。
+</Exercise>
+
+<Exercise number="9.3" title="对角线引理">
+复述 $\mathrm{diag}$ 的定义，并说明为什么 $G$ 与 $\varphi(\ulcorner G\urcorner)$ 等价。
+</Exercise>
+
+<Exercise number="9.4" title="开放题">
+“$\ulcorner\varphi\urcorner$ 是自然数”与“$\varphi$ 为真”之间隔着什么？请用本篇的概念回答。
+</Exercise>
+
+<Hint>第 9.2 题的见证是一段证明的编码；检查证明是否合法是原始递归的。第 9.3 题注意 $m$ 是 $\psi$ 的编码，而 $G$ 是 $\psi(\overline{m})$。</Hint>
+
+## 自学检查单
+
+- 我能解释 Gödel 编码为什么必须可计算吗？
+- 我能区分原始递归、Σ₁ 与可计算吗？
+- 我知道可表示性定理说了什么吗？
+- 我能复述对角线引理的构造吗？
+- 我是否把编码与意义、真值混在了一起？
+
+## 本章核对来源
+
+- Boolos–Burgess–Jeffrey, *Computability and Logic*, 5th ed., 第 15–16 章：Gödel 编码、可表示性与对角线引理。
+- Kleene, *Introduction to Metamathematics*, 第 15 章：原始递归与算术化（用于对照）。
+- Open Logic Project, *Sets, Logic, Computation*：算术化与可表示性章节。
+- 可表示性定理与 $\mathrm{diag}$ 的原始递归性标为证明骨架；对角线引理的构造完整展开。

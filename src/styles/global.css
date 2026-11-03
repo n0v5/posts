@@ -6,6 +6,11 @@
   line-height: 1.75;
 }
 
+/* 窄屏视口/滚动条可能造成几像素的整页横向滚动；表格和代码块仍各自滚动 */
+body {
+  overflow-x: clip;
+}
+
 .post-content > :first-child {
   margin-top: 0;
 }
@@ -40,6 +45,52 @@
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
   font-size: 1.05rem;
+}
+
+/* 交互图在桌面端突破正文栏宽，手机上仍然贴合正文 */
+.post-content .visual-breakout {
+  width: calc(100vw - 48px);
+  max-width: 1100px;
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+
+.post-content .visual-breakout h3 {
+  font-size: clamp(1.35rem, 1vw + 1rem, 1.6rem);
+  line-height: 1.25;
+}
+
+/* 交互图内的辅助字号下限：避免 9–11px 的标签在长文里失去可读性 */
+.post-content .visual-breakout .text-\[9px\],
+.post-content .visual-breakout .text-\[10px\],
+.post-content .visual-breakout .text-\[11px\] {
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.post-content .visual-breakout .text-xs {
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+@media (min-width: 1024px) {
+  .post-content .visual-breakout {
+    width: min(1100px, calc(100vw - 64px));
+  }
+}
+
+@media (max-width: 640px) {
+  .post-content .visual-breakout {
+    width: 100%;
+    margin-left: 0;
+    transform: none;
+  }
+
+  .post-content pre,
+  .post-content pre code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
 }
 
 .post-content p {
@@ -98,6 +149,11 @@
   background: #f4f4f5;
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   font-size: 0.875em;
+  overflow-wrap: anywhere;
+}
+
+.post-content a {
+  overflow-wrap: anywhere;
 }
 
 .post-content pre {
@@ -232,5 +288,325 @@
 @media print {
   .math-copy {
     display: none;
+  }
+}
+
+/* 《形式的边界》系列排版 */
+.series-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 1rem;
+  margin-bottom: 1.5rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.75rem;
+  background: #fafafa;
+  font-size: 0.875rem;
+}
+
+.series-banner-title {
+  font-weight: 650;
+  color: inherit;
+  text-decoration: none;
+}
+
+.series-banner-title:hover {
+  text-decoration: underline;
+}
+
+.series-banner-meta {
+  color: #71717a;
+}
+
+.series-block {
+  margin: 1.5rem 0;
+  overflow: hidden;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.75rem;
+  background: #ffffff;
+}
+
+.series-block-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.6rem;
+  padding: 0.55rem 0.9rem;
+  background: #f4f4f5;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.series-block-kind {
+  font-weight: 750;
+}
+
+.series-block-title {
+  color: #52525b;
+  font-weight: 500;
+}
+
+.series-block-body {
+  padding: 0.75rem 1rem;
+}
+
+.series-theorem {
+  border-left: 3px solid #6366f1;
+}
+
+.series-definition {
+  border-left: 3px solid #0891b2;
+}
+
+.series-proof {
+  margin: 1rem 0 1.75rem;
+  padding: 0.25rem 0 0.25rem 1rem;
+  border-left: 3px solid #a1a1aa;
+}
+
+.series-proof-label {
+  margin-bottom: 0.35rem;
+  color: #52525b;
+  font-size: 0.8rem;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+}
+
+.series-qed {
+  color: #71717a;
+  text-align: right;
+}
+
+.series-exercise {
+  margin: 1.25rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px dashed #d4d4d8;
+  border-radius: 0.75rem;
+  background: #fafafa;
+}
+
+.series-exercise-head {
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+}
+
+.series-hint {
+  margin-top: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  font-size: 0.9rem;
+}
+
+.series-hint summary {
+  color: #52525b;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.series-metaphor {
+  margin: 1.5rem 0;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid #d97706;
+  border-radius: 0.5rem;
+  background: #fffbeb;
+}
+
+.series-metaphor-title {
+  margin-bottom: 0.35rem;
+  font-weight: 750;
+}
+
+.series-metaphor-breaking {
+  margin-top: 0.6rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #f59e0b;
+}
+
+.series-warning {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #fca5a5;
+  border-radius: 0.5rem;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.series-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e4e4e7;
+  font-size: 0.875rem;
+}
+
+.series-nav-side {
+  max-width: 48%;
+}
+
+.series-nav-next {
+  margin-left: auto;
+  text-align: right;
+}
+
+.series-nav-placeholder {
+  color: #a1a1aa;
+}
+
+.series-index-header {
+  margin-bottom: 2rem;
+}
+
+.series-index-kicker {
+  margin-bottom: 0.4rem;
+  color: #71717a;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.series-index-header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.series-index-header p {
+  margin-top: 0.75rem;
+  color: #52525b;
+}
+
+.series-index-paths {
+  margin-top: 2rem;
+  padding: 1rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.75rem;
+  background: #fafafa;
+}
+
+.series-index-paths h2 {
+  font-size: 1.1rem;
+  font-weight: 750;
+}
+
+.series-index-path {
+  margin: 0.75rem 0;
+}
+
+.series-index-path h3 {
+  font-weight: 700;
+}
+
+.series-index-path p {
+  color: #71717a;
+  font-size: 0.875rem;
+}
+
+.series-index-path-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+}
+
+.series-index-part {
+  margin-top: 2.5rem;
+}
+
+.series-index-part h2 {
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e4e4e7;
+  font-size: 1.25rem;
+  font-weight: 750;
+}
+
+.series-index-summary {
+  margin-top: 0.5rem;
+  color: #71717a;
+  font-size: 0.9rem;
+}
+
+.series-index-list {
+  margin-top: 1rem;
+  padding-left: 1.25rem;
+  list-style: decimal;
+}
+
+.series-index-list li {
+  margin: 0.6rem 0;
+}
+
+.series-index-list a {
+  font-weight: 600;
+}
+
+.series-index-desc {
+  display: block;
+  margin-top: 0.15rem;
+  color: #71717a;
+  font-size: 0.875rem;
+}
+
+.series-index-empty {
+  margin-top: 0.75rem;
+  color: #a1a1aa;
+  font-size: 0.9rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .series-banner,
+  .series-exercise,
+  .series-index-paths {
+    border-color: #3f3f46;
+    background: #18181b;
+  }
+
+  .series-block {
+    border-color: #3f3f46;
+    background: #09090b;
+  }
+
+  .series-block-head {
+    background: #27272a;
+  }
+
+  .series-block-title,
+  .series-proof-label,
+  .series-index-header p {
+    color: #a1a1aa;
+  }
+
+  .series-hint {
+    border-color: #3f3f46;
+    background: #18181b;
+  }
+
+  .series-metaphor {
+    border-left-color: #b45309;
+    background: #1c1917;
+  }
+
+  .series-warning {
+    border-color: #7f1d1d;
+    background: #450a0a;
+    color: #fca5a5;
+  }
+
+  .series-nav,
+  .series-index-part h2 {
+    border-color: #27272a;
+  }
+
+  .series-index-desc,
+  .series-index-path p,
+  .series-index-summary,
+  .series-banner-meta,
+  .series-qed {
+    color: #a1a1aa;
   }
 }

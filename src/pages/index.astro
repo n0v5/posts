@@ -98,6 +98,27 @@ const baseUrl = import.meta.env.BASE_URL;
     </div>
   </section>
 
+  <section class="mb-12">
+    <h2 class="text-xl font-bold border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-6">连载</h2>
+    <a
+      href={`${baseUrl}series/forms-boundary/`}
+      data-featured="forms-boundary"
+      class="group flex h-full flex-col rounded-2xl border border-indigo-200 dark:border-indigo-900/60 bg-white dark:bg-zinc-900/60 p-5 sm:p-6 shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-800 transition"
+    >
+      <div class="flex flex-wrap items-center gap-2 mb-3">
+        <span class="text-[10px] font-bold tracking-[0.18em] uppercase text-indigo-600 dark:text-indigo-400">New · Series</span>
+        <span class="text-[10px] px-2 py-0.5 rounded-full border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400">31 篇 + 附录</span>
+      </div>
+      <h3 class="text-xl sm:text-2xl font-extrabold tracking-tight mb-2 text-balance group-hover:text-zinc-700 dark:group-hover:text-zinc-200 transition">形式的边界：元数学、集合论与逻辑</h3>
+      <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">
+        从一阶逻辑、可计算性与 Gödel，到 ZFC、力迫、非经典逻辑与数学哲学。强调语法与语义的分工、公理的动机，以及每个比喻的失效边界。
+      </p>
+      <span class="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+        进入系列 <span aria-hidden="true" class="transition group-hover:translate-x-0.5">→</span>
+      </span>
+    </a>
+  </section>
+
   <section class="space-y-8">
     <h2 class="text-xl font-bold border-b border-zinc-200 dark:border-zinc-800 pb-2">最近文章</h2>
     {posts.length === 0 ? (

@@ -1,0 +1,124 @@
+---
+title: "形式理论、可定义性与模型论初步"
+pubDate: 2026-11-06
+description: "从句子集与模型类的关系出发，区分理论、扩张与保守扩张，定义可定义集与初等子结构，并用 Tarski–Vaught 判别法进入模型论。"
+tags: ["元数学", "逻辑", "模型论"]
+series: "forms-boundary"
+seriesPart: 1
+seriesOrder: 6
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 1–5 篇：结构、满足、语义后承、完备性、紧致性。
+- 集合、子集、函数、元组。
+
+## 本篇新术语
+
+- **理论**：一组用来描述某类结构的句子。
+- **扩张**：在语言或公理上加入更多内容的更大理论。
+- **保守扩张**：新理论不证明旧语言里的新句子。
+- **可定义集**：能用公式从结构中筛出来的子集。
+- **初等子结构**：两个结构在所有一阶公式上判断一致。
+
+## 问题：结构与理论如何互相描述？
+
+前几篇把“公式在结构中为真”写清楚了。现在换一个方向：给定一组句子，考察它所有模型的共同性质；给定一个结构，考察哪些集合能被公式筛出来。这就是模型论的两个基本视角。
+
+一阶逻辑的表达力有限，所以“理论”通常不能钉死一个结构，只能描述一类结构。比较理论、比较模型、比较可定义性，能把“这个公理系统到底说了什么”变成可检查的问题。
+
+<Definition number="6.1" title="理论、扩张与保守扩张">
+一组句子 $T$ 称为一个**理论**。$T$ 的模型类记作 $\mathrm{Mod}(T)$，即所有满足 $T$ 中每个句子的结构。
+
+若 $T\subseteq T'$，称 $T'$ 是 $T$ 的**扩张**。若 $T'$ 在 $T$ 的语言中能证明的句子都已被 $T$ 证明，即对旧语言中的任意句子 $\varphi$，$T'\vdash\varphi$ 蕴含 $T\vdash\varphi$，则称 $T'$ 是 $T$ 的**保守扩张**。
+
+若 $T'$ 只通过给旧符号下定义来加入新符号，则称 $T'$ 是 $T$ 的**定义扩张**。定义扩张总是保守的；它不增加旧语言中的新定理。
+</Definition>
+
+**逐字解构**：保守扩张的关键是“旧语言中的句子”。新理论当然可能证明新符号相关的新句子；保守性只要求它不偷偷证明旧语言里的新内容。定义扩张是最常见的安全扩张：新符号只是旧概念的缩写。
+
+解释（interpretation）是更一般的比较方式：把一个理论的语言翻译到另一个理论的语言中，并验证翻译后的公理可证。它技术细节较多，本篇只给名字与直觉，不展开；后面的相对一致性讨论会用到类似思想。
+
+<Definition number="6.2" title="可定义集">
+设 $\mathcal{A}$ 是签名 $\sigma$ 的结构，$X\subseteq A^n$。称 $X$ 在 $\mathcal{A}$ 中**可定义**，若存在公式 $\varphi(x_1,\dots,x_n,y_1,\dots,y_m)$ 与参数 $b_1,\dots,b_m\in A$，使得对任意 $a_1,\dots,a_n\in A$，
+
+$$
+(a_1,\dots,a_n)\in X \quad\text{当且仅当}\quad \mathcal{A}\models\varphi(a_1,\dots,a_n,b_1,\dots,b_m).
+$$
+
+若不需要参数，称 $X$ 是**零参数可定义**的。
+</Definition>
+
+<Metaphor title="公式是一把筛子" breaking="筛子把已经存在的东西分开；公式并不创造集合，也不保证筛出来的集合非空。可定义性总是相对于一个结构、一个语言和一组参数；换结构或换语言，可定义的集合会变。">
+把公式想成一把筛子：把它放进结构里，符合条件的元组留下，不符合的漏掉。这个比喻能说明“用公式挑子集”，但不能说明“所有子集都能被挑出来”；事实上，大多数子集在多数结构中不可定义。
+</Metaphor>
+
+**易错边界**：可定义性是语义性质，不是语法性质。同一个公式在不同结构中定义的集合不同；同一个集合在不同语言中可能可定义，也可能不可定义。讨论可定义性时，必须同时说清语言、结构与参数。
+
+## 初等子结构
+
+<Definition number="6.3" title="初等子结构">
+设 $\mathcal{A},\mathcal{B}$ 是同一签名下的结构，$A\subseteq B$。若对任意公式 $\varphi(x_1,\dots,x_n)$ 与任意 $a_1,\dots,a_n\in A$，都有
+
+$$
+\mathcal{A}\models\varphi(a_1,\dots,a_n) \quad\text{当且仅当}\quad \mathcal{B}\models\varphi(a_1,\dots,a_n),
+$$
+
+则称 $\mathcal{A}$ 是 $\mathcal{B}$ 的**初等子结构**，记作 $\mathcal{A}\prec\mathcal{B}$。
+</Definition>
+
+仅仅 $A\subseteq B$ 且关系相容，还不足以保证初等性。例如 $(\mathbb{N},<)$ 是 $(\mathbb{Z},<)$ 的子结构，但不是初等子结构：前者满足“有最小元”，后者不满足。
+
+<Theorem number="6.1" title="Tarski–Vaught 判别法">
+设 $\mathcal{A}\subseteq\mathcal{B}$。若对任意公式 $\varphi(x,y_1,\dots,y_n)$ 与任意 $a_1,\dots,a_n\in A$，只要 $\mathcal{B}\models\exists x\,\varphi(x,a_1,\dots,a_n)$，就存在 $b\in A$ 使 $\mathcal{B}\models\varphi(b,a_1,\dots,a_n)$，则 $\mathcal{A}\prec\mathcal{B}$。
+</Theorem>
+
+<Proof>
+对公式结构做归纳。原子公式由子结构关系保证。连接词情形由归纳假设直接得到。关键是存在量词：假设 $\mathcal{B}\models\exists x\,\psi(x,a)$。由判别法条件，存在 $b\in A$ 使 $\mathcal{B}\models\psi(b,a)$；由归纳假设，$\mathcal{A}\models\psi(b,a)$，于是 $\mathcal{A}\models\exists x\,\psi(x,a)$。反过来，若 $\mathcal{A}\models\exists x\,\psi(x,a)$，取 $\mathcal{A}$ 中的见证 $b$；由归纳假设它在 $\mathcal{B}$ 中也满足 $\psi$，所以 $\mathcal{B}$ 满足存在公式。全称量词用否定与存在量词的等价处理。归纳完成。
+</Proof>
+
+这个判别法的用途是：不必逐条检查所有公式，只需检查“$\mathcal{B}$ 中存在见证时，$\mathcal{A}$ 中也有一个”。在代数与序结构中，这个条件常常由稠密性、闭包性或紧致性给出。
+
+## 替代方案与冗余分析
+
+- **只比较模型**：能看出结构差异，却无法说明哪些差异由一阶语言捕捉。
+- **只比较理论**：能看出公理强弱，却无法看到同一理论的不同模型。
+- **把可定义性当成构造性**：公式只筛选，不构造；要构造集合仍需集合论工具。
+- **把初等子结构当成普通子结构**：普通子结构只保证运算封闭与关系相容，初等子结构还要求所有一阶性质一致。
+
+## 习题
+
+<Exercise number="6.1" title="偶数集">
+在语言 $\{+,\cdot,0,1\}$ 的标准结构 $(\mathbb{N},+,\cdot,0,1)$ 中，写出一个定义偶数集的公式。
+</Exercise>
+
+<Exercise number="6.2" title="保守扩张">
+举一个定义扩张的例子，并说明它为什么不增加旧语言中的新定理。
+</Exercise>
+
+<Exercise number="6.3" title="非初等子结构">
+证明 $(\mathbb{N},<)$ 不是 $(\mathbb{Z},<)$ 的初等子结构。
+</Exercise>
+
+<Exercise number="6.4" title="开放题">
+“所有子集都可定义”这句话为什么不能对任意结构成立？从集合大小或语言大小的角度想一想。
+</Exercise>
+
+<Hint>第 6.1 题用“存在 $y$ 使 $x=y+y$”。第 6.3 题找一个在 $\mathbb{N}$ 中真、在 $\mathbb{Z}$ 中假的句子。</Hint>
+
+## 自学检查单
+
+- 我能区分理论、扩张与保守扩张吗？
+- 我能写出一个可定义集的定义，并指出参数的作用吗？
+- 我知道初等子结构比普通子结构强在哪里吗？
+- 我能复述 Tarski–Vaught 判别法的存在量词条件吗？
+- 我是否把“可定义”误当成了“可构造”？
+
+## 本章核对来源
+
+- Enderton, *A Mathematical Introduction to Logic*, 2nd ed., 第 2 章：理论与模型。
+- Marker, *Model Theory: An Introduction*, 第 1 章：可定义集、初等子结构与 Tarski–Vaught。
+- Open Logic Project, *Sets, Logic, Computation*：模型论初步章节。
+- 解释（interpretation）只给直觉定义；其技术细节留到相对一致性与模型论专题。

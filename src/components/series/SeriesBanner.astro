@@ -1,0 +1,22 @@
+---
+interface Props {
+  seriesId: string;
+  seriesTitle: string;
+  partTitle: string;
+  order: number;
+  appendix?: boolean;
+}
+
+const { seriesId, seriesTitle, partTitle, order, appendix = false } = Astro.props;
+const baseUrl = import.meta.env.BASE_URL;
+const label = appendix ? '附录' : order === 0 ? '导论' : `第 ${order} 篇`;
+---
+
+<div class="series-banner">
+  <a class="series-banner-title" href={`${baseUrl}series/${seriesId}/`}>{seriesTitle}</a>
+  <span class="series-banner-meta">
+    {partTitle}
+    {partTitle ? ' · ' : ''}
+    {label}
+  </span>
+</div>

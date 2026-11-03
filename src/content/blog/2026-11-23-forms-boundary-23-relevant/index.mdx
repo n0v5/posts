@@ -1,0 +1,111 @@
+---
+title: "相关、次结构与悖论逻辑：蕴含的代价"
+pubDate: 2026-11-23
+description: "从实质蕴含的悖论出发，介绍相关逻辑、次结构逻辑与 LP 悖论逻辑，说明爆炸原则为何可以被放弃，以及放弃它的代价。"
+tags: ["逻辑", "哲学逻辑", "相关逻辑", "次结构逻辑"]
+series: "forms-boundary"
+seriesPart: 4
+seriesOrder: 23
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 2–3 篇：语义后承、证明系统。
+- 第 22 篇：多值逻辑与真值间隙。
+- 经典逻辑中的爆炸原则：从矛盾推出任意命题。
+
+## 本篇新术语
+
+- **相关逻辑**：要求蕴含的前件与后件在内容上相关，避免“无关命题推出一切”。
+- **次结构逻辑**：通过限制或删除结构规则（弱化、收缩）得到的一类逻辑。
+- **悖论逻辑**：允许某些矛盾为真，但不让矛盾推出一切。
+- **爆炸原则**：从 $\varphi$ 与 $\neg\varphi$ 推出任意 $\psi$。
+- **LP**：Priest 的悖论逻辑，三值、真与假可以同时成立。
+
+## 问题：假前提能推出一切吗？
+
+经典逻辑中，若前提矛盾，则任意结论都语义后承。因为不存在同时满足 $\varphi$ 与 $\neg\varphi$ 的模型，所以“所有满足前提的模型都满足结论”是空洞地真。
+
+类似的还有实质蕴含悖论：$\varphi\to(\psi\to\varphi)$ 在经典逻辑中有效，即使 $\psi$ 与 $\varphi$ 毫无关系。相关逻辑认为，这些“有效”不是真正的推理：结论必须与前件有内容上的联系。
+
+<Definition number="23.1" title="次结构与相关逻辑">
+在相继式演算中，结构规则控制前提/结论的使用方式：
+
+- **弱化**：可以在前提或结论中加入无关公式。
+- **收缩**：可以重复使用同一个前提。
+
+删去弱化，得到资源敏感的逻辑（如线性逻辑）；限制收缩，得到不能无限复制前提的逻辑。**相关逻辑**要求蕴含的前件在推导中真正被使用，从而排除“无关命题推出后件”的定理。具体系统有 R、E、relevant implication 等，语义比经典逻辑复杂。
+</Definition>
+
+<Metaphor title="前提是资源" breaking="次结构逻辑的‘资源’不是物理消耗；它是对证明中公式使用方式的句法限制。删去弱化不等于说现实世界没有冗余，而是说形式推导不能凭空加入无关前提。">
+把前提想成资源：弱化让你可以凭空多拿一个前提，收缩让你可以无限复用同一个前提。次结构逻辑通过限制这些操作，让推导更贴近“实际使用了什么”。这个比喻能说明结构规则，但不能说明所有资源逻辑都是物理主义的。
+</Metaphor>
+
+## LP：允许矛盾，但不爆炸
+
+LP 的真值集为 $\{\mathrm{T},\mathrm{F},\mathrm{B}\}$，其中 $\mathrm{B}$ 表示“既真又假”。指定值为 $\mathrm{T}$ 与 $\mathrm{B}$。
+
+- 否定：$\neg\mathrm{T}=\mathrm{F}$，$\neg\mathrm{F}=\mathrm{T}$，$\neg\mathrm{B}=\mathrm{B}$。
+- 合取：$\mathrm{B}\land\mathrm{B}=\mathrm{B}$，$\mathrm{B}\land\mathrm{T}=\mathrm{B}$，$\mathrm{B}\land\mathrm{F}=\mathrm{F}$。
+- 析取：$\mathrm{B}\lor\mathrm{B}=\mathrm{B}$，$\mathrm{B}\lor\mathrm{T}=\mathrm{T}$，$\mathrm{B}\lor\mathrm{F}=\mathrm{B}$。
+
+<Theorem number="23.1" title="LP 中爆炸原则失效">
+在 LP 中，$p\land\neg p$ 不语义后承任意 $q$。
+</Theorem>
+
+<Proof>
+取 $p=\mathrm{B}$、$q=\mathrm{F}$。则 $\neg p=\mathrm{B}$，$p\land\neg p=\mathrm{B}\land\mathrm{B}=\mathrm{B}$，是指定值；但 $q=\mathrm{F}$ 不是指定值。因此前提可满足而结论不满足，语义后承不成立。
+</Proof>
+
+LP 也放弃**析取三段论**：$p\lor q$ 与 $\neg p$ 不再推出 $q$。取 $p=\mathrm{B}$、$q=\mathrm{F}$：$p\lor q=\mathrm{B}\lor\mathrm{F}=\mathrm{B}$ 与 $\neg p=\mathrm{B}$ 都是指定值，但 $q=\mathrm{F}$。这说明“允许矛盾”不是免费的：一些经典推理规则必须被放弃。
+
+## 相关逻辑的动机
+
+相关逻辑要求蕴含的前件与后件共享命题变元。例如 $p\to(q\to p)$ 不是相关有效的，因为 $q$ 与结论无关。它试图捕捉“因为”或“根据”的直觉：一个条件句的 antecedent 应当对 consequent 有实质贡献。
+
+代价是语义与证明论都更复杂：朴素的可能世界语义不够，需要 Routley–Meyer 语义、三元关系或代数语义；判定性问题也更棘手。
+
+## 替代方案与冗余分析
+
+- **经典逻辑**：接受爆炸与实质蕴含悖论，换取简单语义与强表达力。
+- **直觉主义**：不接受排中律，但接受爆炸；它处理构造性，不处理矛盾。
+- **LP / 次协调逻辑**：允许矛盾为真，放弃爆炸；适合处理悖论与不一致信息。
+- **相关逻辑**：要求内容相关，放弃无关蕴含；适合条件句与推理内容分析。
+
+## 习题
+
+<Exercise number="23.1" title="爆炸">
+在经典逻辑中证明：若 $\Gamma$ 不一致，则对任意 $\varphi$，$\Gamma\models\varphi$。请说明这个证明为什么在 LP 中失败。
+</Exercise>
+
+<Exercise number="23.2" title="LP 反模型">
+用 $p=\mathrm{B}$、$q=\mathrm{F}$ 验证 $p\land\neg p\nvDash q$，并写出各子公式的真值。
+</Exercise>
+
+<Exercise number="23.3" title="析取三段论">
+举一个 LP 反模型，说明 $p\lor q$ 与 $\neg p$ 不蕴含 $q$。
+</Exercise>
+
+<Exercise number="23.4" title="开放题">
+如果允许矛盾为真，数学证明还有意义吗？请从“不一致数据库”与“真实矛盾”两种场景讨论。
+</Exercise>
+
+<Hint>第 23.1 题的关键是“矛盾没有模型”，所以语义后承空洞成立。第 23.3 题取 $p=\mathrm{B}$、$q=\mathrm{F}$。</Hint>
+
+## 自学检查单
+
+- 我能解释实质蕴含悖论与爆炸原则吗？
+- 我知道次结构逻辑限制了什么结构规则吗？
+- 我能写出 LP 的三值真值规则吗？
+- 我知道 LP 放弃了哪些经典推理规则吗？
+- 我是否能区分“允许矛盾”与“所有矛盾都真”？
+
+## 本章核对来源
+
+- Priest, *An Introduction to Non-Classical Logic*, 2nd ed., 第 7–8 章：多值、相关与悖论逻辑。
+- Restall, *An Introduction to Substructural Logics*：结构规则与次结构逻辑。
+- Read, *Relevant Logic*：相关蕴含的哲学动机。
+- Stanford Encyclopedia of Philosophy, “Paraconsistent Logic”：LP 与爆炸原则。
+- 相关逻辑的 Routley–Meyer 语义只给名称；本篇展开 LP 的反模型与代价。

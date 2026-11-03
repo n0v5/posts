@@ -1,0 +1,145 @@
+---
+title: "第二不完备定理、Tarski 不可定义性与真理的界限"
+pubDate: 2026-11-11
+description: "从可证性条件推出 Gödel 第二定理：一致的系统不能证明自己一致；再用对角线引理证明 Tarski 不可定义性：真理不能在同一语言中定义。"
+tags: ["元数学", "逻辑", "不完备性", "真理理论"]
+series: "forms-boundary"
+seriesPart: 2
+seriesOrder: 11
+---
+
+import { Theorem, Definition, Proof, Exercise, Hint, Metaphor } from '../../../components/series/Blocks.jsx';
+
+## 前置概念
+
+- 第 9–10 篇：Gödel 编码、可表示性、对角线引理、第一不完备定理。
+- 第 3–4 篇：一致性、证明系统。
+
+## 本篇新术语
+
+- **Hilbert–Bernays 条件**：可证性谓词需要满足的三条形式化条件。
+- **第二不完备定理**：足够强的系统不能在自身中证明自己的一致。
+- **Tarski 不可定义性**：一个语言的真理谓词不能在该语言内部定义。
+- **真谓词**：满足 T-模式的谓词 $Tr(x)$。
+
+## 问题：系统能给自己开健康证明吗？
+
+第一定理说：足够强的系统总有不可证的句子。第二定理更进一步：那个“系统不会推出矛盾”的断言本身，也不能在系统内部证明。
+
+这不是说一致性无法证明。Gentzen 用超限归纳证明了算术的一致性，但所用的原则超出了算术本身。第二定理限制的是“在同一系统内部、用该系统允许的手段”证明自身一致。
+
+<Definition number="11.1" title="Hilbert–Bernays 可证性条件">
+设 $T$ 是递归公理化的算术理论，$\mathrm{Prov}_T$ 是可证性谓词。三条标准条件是：
+
+1. 若 $T\vdash\varphi$，则 $T\vdash\mathrm{Prov}_T(\ulcorner\varphi\urcorner)$。
+2. $T\vdash\mathrm{Prov}_T(\ulcorner\varphi\to\psi\urcorner)\to(\mathrm{Prov}_T(\ulcorner\varphi\urcorner)\to\mathrm{Prov}_T(\ulcorner\psi\urcorner))$。
+3. $T\vdash\mathrm{Prov}_T(\ulcorner\varphi\urcorner)\to\mathrm{Prov}_T(\ulcorner\mathrm{Prov}_T(\ulcorner\varphi\urcorner)\urcorner)$。
+</Definition>
+
+第一条是“可证则证明存在”；第二条是“可证性对分离规则封闭”；第三条是“可证性本身可被形式化地再次证明”。它们不是凭空假设，而是对标准可证性谓词的可表示性验证。
+
+<Theorem number="11.1" title="Gödel 第二不完备定理">
+设 $T$ 是 consistent、递归公理化的算术理论，且满足 Hilbert–Bernays 条件。则 $T\nvdash\mathrm{Con}(T)$。
+</Theorem>
+
+<Proof sketch>
+把第一定理的证明在 $T$ 内部形式化。由对角线引理取 $G$ 使 $T\vdash G\leftrightarrow\neg\mathrm{Prov}_T(\ulcorner G\urcorner)$。第一定理的论证给出
+
+$$
+T\vdash\mathrm{Con}(T)\to G.
+$$
+
+（直觉上：若 $T$ 一致，则 $G$ 不可能被证明；而 $G$ 说的正是“$G$ 不可证”，所以 $G$ 成立。）这句话的形式化依赖三条可证性条件：需要把“若 $T\vdash G$ 则 $T\vdash\mathrm{Prov}_T(\ulcorner G\urcorner)$”以及“$T$ 不能同时证明 $G$ 与 $\neg G$”在 $T$ 内部表达。
+
+若 $T\vdash\mathrm{Con}(T)$，则由上式得 $T\vdash G$；但第一定理已证 $T\nvdash G$，矛盾。因此 $T\nvdash\mathrm{Con}(T)$。
+</Proof>
+
+<Metaphor title="系统给自己开健康证明" breaking="Con(T) 是系统内部的一个算术句子，不是外部的、全知的保证；一个系统在更强系统中被证明一致，不等于它在自身中证明了一致。">
+把 $T$ 想成一家医院，$\mathrm{Con}(T)$ 是“本院不会误诊”的内部报告。第二定理说：这份报告不能由本院自己的规程推出；你可以在更大的医院里证明它，但那时用的已经不是本院规程。
+</Metaphor>
+
+**易错边界**：第二定理不否认一致性的数学证明。它只否认“在 $T$ 内部、只用 $T$ 的公理与规则”证明 $\mathrm{Con}(T)$。Gentzen 的一致性证明使用直到 $\varepsilon_0$ 的超限归纳，这正是 $T$ 本身不能完全形式化的原则。
+
+## Tarski 不可定义性
+
+<Definition number="11.2" title="真理谓词与 T-模式">
+一个公式 $Tr(x)$ 是语言 $\mathcal{L}$ 的**真理谓词**，若对每个 $\mathcal{L}$-句子 $\varphi$，都有
+
+$$
+T\vdash Tr(\ulcorner\varphi\urcorner)\leftrightarrow\varphi.
+$$
+
+这组等价式称为 **T-模式**。它要求谓词 $Tr$ 对每个句子的编码给出与该句子本身相同的真值。
+</Definition>
+
+<Theorem number="11.2" title="Tarski 不可定义性">
+设 $T$ 是 consistent、能表示基本算术的理论。则不存在语言中的公式 $Tr(x)$ 满足对所有句子 $\varphi$ 的 T-模式。
+</Theorem>
+
+<Proof>
+反设存在这样的 $Tr(x)$。对公式 $\neg Tr(x)$ 应用对角线引理，得到句子 $\lambda$ 使
+
+$$
+T\vdash\lambda\leftrightarrow\neg Tr(\ulcorner\lambda\urcorner).
+$$
+
+由 T-模式，取 $\varphi=\lambda$，得到
+
+$$
+T\vdash Tr(\ulcorner\lambda\urcorner)\leftrightarrow\lambda.
+$$
+
+两式合并，$T\vdash\lambda\leftrightarrow\neg\lambda$，于是 $T$ 不一致，矛盾。因此不存在这样的 $Tr$。
+</Proof>
+
+这个证明与 Gödel 第一定理同源：都是对角线引理加上“把某个语义谓词放进对象语言”的尝试。区别在于，Gödel 用的是可证性谓词（可以在算术中表示），Tarski 用的是真理谓词（不能在同一个语言中表示）。
+
+## 真理与可证性的分层
+
+- **可证性**是语法概念，可以在算术中表示；$\mathrm{Prov}_T$ 是 Σ₁。
+- **真理**是语义概念；在标准模型中，句子有真值，但“在该语言中为真”不能由该语言的公式统一表达。
+- **一致性**是语法概念，可以在算术中表示为 $\mathrm{Con}(T)$；但它不能在 $T$ 内部被证明（在第二定理条件下）。
+- **反思原则**：若 $T$ 能证明“所有 $T$-定理都为真”，就能推出 $\mathrm{Con}(T)$；因此第二定理也限制了这种反思原则。
+
+## 替代方案与冗余分析
+
+- **语义证明第二定理**：用 Tarski 不可定义性推出；它更概念化，但需要真理分层。
+- **证明论证明**：用 Gentzen 的 cut elimination 与序数分析；它给出一致性证明的强度度量，但超出 $T$。
+- **把 Con(T) 当成“T 真的不会矛盾”**：Con(T) 是形式句子；它的真假取决于标准模型与编码，不是一种心理保证。
+- **把 Tarski 当成“没有真理”**：它只说不存在一个统一的、在同一语言内定义的真理谓词；真理可以分层，或在元语言中讨论。
+
+## 习题
+
+<Exercise number="11.1" title="Con(T) 的形状">
+写出 $\mathrm{Con}(T)$ 的 Σ₁ 形状，并说明它的否定是什么形状。
+</Exercise>
+
+<Exercise number="11.2" title="Gentzen 与第二定理">
+为什么 Gentzen 用 $\varepsilon_0$ 归纳证明 $\mathrm{Con}(\mathrm{PA})$ 不违反第二定理？
+</Exercise>
+
+<Exercise number="11.3" title="说谎者">
+写出 Tarski 证明中使用的说谎者句 $\lambda$，并说明它与 Gödel 句的区别。
+</Exercise>
+
+<Exercise number="11.4" title="开放题">
+如果 $T$ 不能证明 $\mathrm{Con}(T)$，我们还能在什么意义上相信 $T$ 一致？请区分数学证明、经验证据与哲学立场。
+</Exercise>
+
+<Hint>第 11.1 题把 $\mathrm{Con}(T)$ 写成 $\neg\exists x\,\mathrm{Proof}_T(x,\ulcorner 0=1\urcorner)$。第 11.2 题注意 $\varepsilon_0$ 归纳不是 PA 可形式化的原则。</Hint>
+
+## 自学检查单
+
+- 我能写出三条可证性条件吗？
+- 我知道第二定理限制的是什么、不限制什么吗？
+- 我能复述 Tarski 不可定义性的对角线证明吗？
+- 我能区分可证性、真理与一致性吗？
+- 我是否把 Con(T) 当成了外部的、全知的保证？
+
+## 本章核对来源
+
+- Boolos–Burgess–Jeffrey, *Computability and Logic*, 5th ed., 第 18 章：第二不完备定理。
+- Smullyan, *Gödel's Incompleteness Theorems*：可证性条件与第二定理。
+- Tarski, “The Semantic Conception of Truth” 与 *Undecidable Theories* 的相关表述（仅作概念核对，不引页码）。
+- Open Logic Project, *Sets, Logic, Computation*：Tarski 不可定义性章节。
+- 第二定理的形式化推导标为证明骨架；Tarski 证明完整展开。
