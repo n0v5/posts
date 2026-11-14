@@ -196,6 +196,7 @@ body {
 .post-content th {
   background: #f4f4f5;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .post-content img {

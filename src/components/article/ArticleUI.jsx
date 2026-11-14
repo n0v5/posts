@@ -81,9 +81,36 @@ export function DeepDive({ title = '技术细节', children }) {
   );
 }
 
+export function AudienceNote({ audience = 'parent', title, children }) {
+  const isParent = audience === 'parent';
+  return (
+    <section
+      className={`my-6 rounded-2xl border p-4 sm:p-5 ${
+        isParent
+          ? 'border-red-200 bg-red-50/60 dark:border-red-900/60 dark:bg-red-950/20'
+          : 'border-zinc-200 bg-white/70 dark:border-zinc-800 dark:bg-zinc-900/50'
+      }`}
+    >
+      <div
+        className={`mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-bold uppercase tracking-[0.16em] ${
+          isParent ? 'text-red-700 dark:text-red-300' : 'text-zinc-500 dark:text-zinc-400'
+        }`}
+      >
+        <span aria-hidden="true">{isParent ? '家' : '学'}</span>
+        <span>{isParent ? '家长版' : '学生版'}</span>
+        {title && <span className="text-sm font-semibold normal-case tracking-normal">· {title}</span>}
+      </div>
+      <div className="text-[15px] leading-7 text-zinc-700 [&_p]:my-1 dark:text-zinc-300">
+        {children}
+      </div>
+    </section>
+  );
+}
+
 export function Badge({ children, tone = 'zinc' }) {
   const tones = {
     zinc: 'border-zinc-200 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400',
+    red: 'border-red-200 text-red-700 dark:border-red-900 dark:text-red-300',
     indigo: 'border-indigo-200 text-indigo-600 dark:border-indigo-900 dark:text-indigo-300',
     emerald: 'border-emerald-200 text-emerald-700 dark:border-emerald-900 dark:text-emerald-300',
     amber: 'border-amber-200 text-amber-700 dark:border-amber-900 dark:text-amber-300',
