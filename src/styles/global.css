@@ -109,6 +109,12 @@ body {
   text-decoration-color: currentColor;
 }
 
+.post-content abbr[title] {
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  cursor: help;
+}
+
 .post-content strong {
   font-weight: 650;
 }

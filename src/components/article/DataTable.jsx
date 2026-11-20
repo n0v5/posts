@@ -1,3 +1,5 @@
+import { renderShortNames } from './majorShortNames.jsx';
+
 export default function DataTable({ columns, rows, caption }) {
   return (
     <figure className="my-6">
@@ -16,7 +18,7 @@ export default function DataTable({ columns, rows, caption }) {
                     column.align === 'right' ? 'text-right' : ''
                   }`}
                 >
-                  {column.label}
+                  {renderShortNames(column.label)}
                 </th>
               ))}
             </tr>
@@ -34,7 +36,7 @@ export default function DataTable({ columns, rows, caption }) {
                       column.nowrap ? 'whitespace-nowrap' : ''
                     }`}
                   >
-                    {row[column.key]}
+                    {renderShortNames(row[column.key])}
                   </td>
                 ))}
               </tr>
@@ -43,7 +45,9 @@ export default function DataTable({ columns, rows, caption }) {
         </table>
       </div>
       {caption && (
-        <figcaption className="mt-2 text-[11px] leading-5 text-zinc-400">{caption}</figcaption>
+        <figcaption className="mt-2 text-[11px] leading-5 text-zinc-400">
+          {renderShortNames(caption)}
+        </figcaption>
       )}
     </figure>
   );
